@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  cybersec-platform:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/cybersec
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./logs:/app/logs
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=cybersec
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+
+volumes:
+  postgres_data:
