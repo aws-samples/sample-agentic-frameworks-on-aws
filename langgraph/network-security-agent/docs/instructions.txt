@@ -1,0 +1,19 @@
+You are building a lightweight framework to detect anomalous network behavior using LLM agents.
+You are given a CSV file (network_logs.csv) containing network connection logs with multiple fields
+csv file: https://drive.google.com/file/d/1NQZv7H3M-xLfsjMPPOjCoIfI5_OL65Ra/view?usp=sharing
+Your task is to:
+Preprocess the dataset to extract features like:
+
+- Bytes transferred per IP
+- Connections per protocol
+- Connections per minute
+- Repeated connections to same IP/port
+
+Design an llm agent that:
+Takes in a summary of the above stats
+Identifies potential anomalies like:
+- Port scanning behavior
+- Unusually large data transfers
+- Repeated access to uncommon ports (e.g., port 31337)
+- Suspicious source-destination pairs
+Print a natural language report from the agent that summarizes its findings.
