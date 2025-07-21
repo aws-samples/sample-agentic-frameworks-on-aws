@@ -20,7 +20,7 @@ module "weather_agent_pod_identity" {
         "dynamodb:GetItem",
         "dynamodb:PutItem"
       ]
-      resources = ["arn:aws:dynamodb:*:*:table/*weather*"]
+      resources = ["arn:aws:dynamodb:*:*:table/*weather*", "arn:aws:dynamodb:*:*:table/*travel*"]
     }
   ]
 
@@ -30,6 +30,12 @@ module "weather_agent_pod_identity" {
       cluster_name    = module.eks.cluster_name
       namespace       = var.weather_namespace
       service_account = var.weather_service_account
+    }
+
+    travel-agent = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = var.travel_namespace
+      service_account = var.travel_service_account
     }
   }
 

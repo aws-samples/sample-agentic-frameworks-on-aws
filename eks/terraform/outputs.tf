@@ -8,6 +8,16 @@ output "weather_agent_table_arn" {
   value       = aws_dynamodb_table.weather_agent_state_table.arn
 }
 
+output "travel_agent_table_name" {
+  description = "The Name of DynamodDb Table for Travel Agent"
+  value       = aws_dynamodb_table.weather_agent_state_table.name
+}
+
+output "travel_agent_table_arn" {
+  description = "The ARN of DynamoDB Table for Travel Agent"
+  value       = aws_dynamodb_table.weather_agent_state_table.arn
+}
+
 output "bedrock_model_id" {
   description = "Bedrock mode id for the agents"
   value       = var.bedrock_model_id
@@ -72,6 +82,11 @@ output "ecr_weather_mcp_repository_url" {
 output "ecr_weather_agent_repository_url" {
   description = "The URL of the Weather Agent ECR repository"
   value       = aws_ecr_repository.weather_agent.repository_url
+}
+
+output "ecr_travel_agent_repository_url" {
+  description = "The URL of the Travel Agent ECR repository"
+  value       = aws_ecr_repository.travel_agent.repository_url
 }
 
 output "ecr_weather_agent_ui_repository_url" {

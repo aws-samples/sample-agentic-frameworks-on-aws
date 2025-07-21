@@ -72,8 +72,6 @@ COPY --from=uv --chown=app:app /app/.venv /app/.venv
 
 # Copy configuration files needed at runtime
 COPY --from=uv --chown=app:app /app/agent.md    /app/agent.md
-COPY --from=uv --chown=app:app /app/mcp-servers /app/mcp-servers
-
 
 # Get healthcheck script
 #COPY ./docker-healthcheck.sh /usr/local/bin/docker-healthcheck.sh
@@ -83,8 +81,8 @@ WORKDIR /app
 # Run as non-root
 USER app
 
-# Expose ports for MCP (8080), A2A (9000), and FastAPI (3000)
-EXPOSE 8080 9000 3000
+# Expose ports for and FastAPI (3000)
+EXPOSE 3000
 
 # When running the container, add --db-path and a bind mount to the host's db file
 #HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "docker-healthcheck.sh" ]

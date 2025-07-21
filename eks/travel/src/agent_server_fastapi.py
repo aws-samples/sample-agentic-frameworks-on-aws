@@ -25,6 +25,7 @@ from pydantic import BaseModel
 import uvicorn
 import jwt
 from strands import Agent
+from strands.session.s3_session_manager import S3SessionManager
 from .agent import create_agent
 
 
@@ -40,6 +41,7 @@ logger.info(f"Authentication enabled: {not TESTING_MODE}")
 
 # DynamoDB setup for agent state management (with in-memory fallback for testing)
 USE_DYNAMODB = os.environ.get('DYNAMODB_AGENT_STATE_TABLE_NAME') is not None
+USE_S3 = os.environ.get('SESSION_STORE_BUCKET_NAME') is not None
 
 if USE_DYNAMODB:
     import boto3

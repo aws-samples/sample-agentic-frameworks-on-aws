@@ -28,3 +28,24 @@ resource "aws_dynamodb_table" "weather_agent_state_table" {
 
   tags = var.tags
 }
+
+
+resource "random_pet" "travel" {
+  length = 2
+  prefix = var.travel_prefix
+}
+
+resource "aws_dynamodb_table" "travel_agent_state_table" {
+  name         = random_pet.travel.id
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "user_id"
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+
+  tags = var.tags
+}
+
+

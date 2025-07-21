@@ -35,9 +35,8 @@ def main_interactive():
     interactive_agent()
 
 
-def servers():
-    """Start MCP, A2A, and FastAPI servers concurrently using subprocesses."""
-    logger.info("Starting Agent Triple Server...")
+def server():
+    """Start FastAPI server."""
     logger.info(f"FastAPI Server will run on port {os.getenv('FASTAPI_PORT', '3000')}")
 
     processes = []
@@ -78,8 +77,8 @@ def servers():
         ])
         processes.append(("FastAPI Server", fastapi_process))
 
-        logger.info("All servers started successfully!")
-        logger.info("Press Ctrl+C to stop all servers")
+        logger.info("server started successfully!")
+        logger.info("Press Ctrl+C to stop server")
 
         # Monitor processes
         while True:
@@ -101,4 +100,4 @@ def servers():
 
 
 if __name__ == "__main__":
-    servers()
+    server()

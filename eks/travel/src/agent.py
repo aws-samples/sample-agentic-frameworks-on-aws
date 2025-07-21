@@ -130,10 +130,12 @@ def _extract_section(content: str, section_name: str) -> Optional[str]:
 
 agent_name, agent_description, system_prompt = load_agent_config()
 
-DEFAULT_A2A_LIST=[
-    "http://localhost:9000", # Weather
-    #"http://localhost:3002" # Recs
-]
+DEFAULT_A2A_CONFIG = """{
+    "urls": [
+        "http://localhost:9000" # Weather A2A server
+    ]
+}"""
+
 def _get_a2a_agent_urls() -> List[str]:
     """
     Load a2a agent URLs from a config file or return default list if file doesn't exist.
@@ -168,11 +170,9 @@ def _get_a2a_agent_urls() -> List[str]:
                         logger.warning(f"Invalid format in {config_file}, expected list or dict with 'urls' key")
             except Exception as e:
                 logger.warning(f"Error loading a2a agent URLs from {config_file}: {str(e)}")
-    
-    # Return default list if no config file found or loading failed
-    logger.info("Using default a2a agent URLs")
-    return DEFAULT_A2A_LIST  # Return empty list as default
 
+    # Return default list if no config file found or loading failed
+    return json.loads(DEFAULT_A2A_CONFIG)["urls"]
 
 def create_agent(messages: Optional[Messages]=None,conversation_manager: Optional[ConversationManager] = None) -> Agent:
     """

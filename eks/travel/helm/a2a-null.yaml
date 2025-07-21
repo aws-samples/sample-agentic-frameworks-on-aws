@@ -1,0 +1,3 @@
+# Example on how to disable a2a agent tools override the the default a2a_agents.json in the values.yaml inside the helm chart
+a2a:
+  a2a_agents.json: null
