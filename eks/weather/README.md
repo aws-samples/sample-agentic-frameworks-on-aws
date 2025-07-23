@@ -225,7 +225,6 @@ source web/.env
 kubectl create secret generic ${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
   --from-literal=OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID} \
   --from-literal=OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} \
-  --from-literal=OAUTH_SIGNIN_URL=${OAUTH_SIGNIN_URL} \
   --from-literal=OAUTH_LOGOUT_URL=${OAUTH_LOGOUT_URL} \
   --from-literal=OAUTH_WELL_KNOWN_URL=${OAUTH_WELL_KNOWN_URL} \
   --from-literal=OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \

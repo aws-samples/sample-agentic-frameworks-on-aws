@@ -13,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from strands import Agent
-from strands.multiagent.a2a import A2AAgent
+from strands.multiagent.a2a import A2AServer
 from strands.types.content import Message, Messages
 from strands.types.exceptions import ContextWindowOverflowException
 from strands.agent.conversation_manager import ConversationManager, SlidingWindowConversationManager
@@ -51,10 +51,10 @@ def a2a_agent():
         strands_agent = create_agent(conversation_manager=MemoryLostConversationManager())
         logger.info("Agent instance created successfully")
 
-        strands_a2a_agent = A2AAgent(
+        strands_a2a_agent = A2AServer(
             agent=strands_agent
         )
-        logger.info("A2A Agent wrapper created successfully")
+        logger.info("A2A Server wrapper created successfully")
 
         port = os.getenv("A2A_PORT", "9000")
         logger.info(f"Starting A2A server on port {port}")
