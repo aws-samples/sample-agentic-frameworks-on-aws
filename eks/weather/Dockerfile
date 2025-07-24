@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ARG RUNTAG=latest
 FROM cgr.dev/chainguard/python:latest-dev AS uv
 
 # Install the project into `/app`
@@ -38,27 +39,24 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # Then, add the rest of the project source code and install it
 # Installing separately from its dependencies allows optimal layer caching
-COPY . /app
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --no-dev --no-editable
 
-FROM cgr.dev/chainguard/python:latest
-
-# Place executables in the environment at the front of the path and include other binaries
-ENV PATH="/app/.venv/bin:$PATH:/usr/sbin"
-
-# Get the project from the uv layer
-COPY --from=uv --chown=nonroot:nonroot /app/.venv /app/.venv
-
-# Copy configuration files needed at runtime
-COPY --from=uv --chown=nonroot:nonroot /app/agent.md    /app/agent.md
-COPY --from=uv --chown=nonroot:nonroot /app/mcp-servers /app/mcp-servers
+FROM cgr.dev/chainguard/python:${RUNTAG}
 
 # Project got copied to here
 WORKDIR /app
 
-# Run as non-root
-USER nonroot
+# Place executables in the environment at the front of the path and include other binaries
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Get the project from the uv layer
+COPY --from=uv  /app/.venv .venv
+
+# Copy configuration files needed at runtime
+COPY agent.md agent.md
+COPY mcp-servers mcp-servers
 
 # Expose ports for MCP (8080), A2A (9000), and FastAPI (3000)
 EXPOSE 8080 9000 3000

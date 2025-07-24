@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Get kubeconfig
+
+aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}
+
 # Deploy MCP Server
 helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/helm \
   --install \
@@ -13,8 +17,8 @@ helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
   --create-namespace \
   --set image.repository=${ECR_REPO_WEATHER_AGENT_URI} \
-  --set env.DYNAMODB_AGENT_STATE_TABLE_NAME=${DYNAMODB_AGENT_STATE_TABLE_NAME} \
   --set env.OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
+  --set env.SESSION_STORE_BUCKET_NAME=${SESSION_STORE_BUCKET_NAME} \
   -f helm/mcp-remote.yaml
 
 # Deploy UI
@@ -35,7 +39,7 @@ helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} web/helm \
   --set image.repository=${ECR_REPO_WEATHER_AGENT_UI_URI} \
   --set secret.name=${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
   --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAME}/prompt" \
-  --set service.type="${KUBERNETES_APP_WEATHER_AGENT_UI_SERVICE_TYPE:-ClusterIP}
+  --set service.type="${KUBERNETES_APP_WEATHER_AGENT_UI_SERVICE_TYPE:-ClusterIP}"
 
 # TODO: Implement VSCode Proxy
 #  --set env.BASE_PATH="${KUBERNETES_APP_WEATHER_AGENT_UI_BASE_PATH:-''}" \

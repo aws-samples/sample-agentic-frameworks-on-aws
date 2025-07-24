@@ -16,12 +16,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "weather_prefix" {
-  description = "The name of dynamodb table for weather agent"
-  type        = string
-  default     = "weather-agent"
-}
-
 variable "weather_namespace" {
   description = "Kubernetes namespace"
   type        = string

@@ -110,12 +110,12 @@ uv run agent
 
 Build the container using Docker:
 ```bash
-docker build . --tag agent
+docker build . --tag agent --build-arg RUNTAG=latest-dev
 ```
 
 Build the container using Finch:
 ```bash
-finch build . --tag agent
+finch build . --tag agent --build-arg RUNTAG=latest-dev
 ```
 
 ### Running Containers
@@ -124,29 +124,24 @@ finch build . --tag agent
 
 ```bash
 docker run -it \
-  -v $HOME/.aws:/app/.aws \
   -e AWS_REGION=${AWS_REGION} \
   -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
   -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
   -e AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
-  agent interactive
+  --entrypoint interactive agent
 ```
 
 #### Triple Server Mode
 
 ```bash
 docker run \
-  -v $HOME/.aws:/app/.aws \
-  -v $PWD/.env:/app/.env \
-  -p 8080:8080 \
-  -p 9000:9000 \
-  -p 3000:3000 \
+  -p 8080:8080 -p 9000:9000 -p 3000:3000 \
   -e AWS_REGION=${AWS_REGION} \
   -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
   -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
   -e AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
   -e DISABLE_AUTH=1 \
-  agent agent
+  agent
 ```
 
 Test all protocols:

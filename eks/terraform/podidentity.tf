@@ -14,13 +14,22 @@ module "weather_agent_pod_identity" {
       ]
       resources = ["*"]
     },
-    {
-      sid = "DynamoDBAccess"
+     {
+      sid = "AccessBucket"
       actions = [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem"
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
       ]
       resources = ["arn:aws:dynamodb:*:*:table/*weather*", "arn:aws:dynamodb:*:*:table/*travel*"]
+      resources = ["${aws_s3_bucket.weather_agent_session_store.arn}/*"]
+    },
+    {
+      sid = "AccessBuckets"
+      actions = [
+        "s3:ListBucket",
+      ]
+      resources = [aws_s3_bucket.weather_agent_session_store.arn]
     }
   ]
 

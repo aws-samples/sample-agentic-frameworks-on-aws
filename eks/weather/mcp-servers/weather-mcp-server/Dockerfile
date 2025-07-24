@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM public.ecr.aws/sam/build-python3.10@sha256:d821662474d65f3cf2fc97dba2fa807a3adb580d02895fc4545527812550ea65 AS uv
+ARG RUNTAG=latest
+FROM cgr.dev/chainguard/python:latest-dev AS uv
 
 # Install the project into `/app`
 WORKDIR /app
@@ -34,53 +35,27 @@ COPY pyproject.toml uv.lock ./
 
 # Install the project's dependencies using the lockfile and settings
 RUN --mount=type=cache,target=/root/.cache/uv \
-    pip install uv==0.7.11 && \
-    uv sync --frozen --no-install-project --no-dev --no-editable
+    uv sync --no-install-project --no-dev --no-editable
 
 # Then, add the rest of the project source code and install it
 # Installing separately from its dependencies allows optimal layer caching
-COPY . /app
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable
+    uv sync --no-dev --no-editable
 
-# Make the directory just in case it doesn't exist
-RUN mkdir -p /root/.local
+FROM cgr.dev/chainguard/python:${RUNTAG}
 
-FROM public.ecr.aws/sam/build-python3.10@sha256:d821662474d65f3cf2fc97dba2fa807a3adb580d02895fc4545527812550ea65
-
-# Place executables in the environment at the front of the path and include other binaries
-ENV PATH="/app/.venv/bin:$PATH:/usr/sbin"
-
-# Install lsof for the healthcheck
-# Install other tools as needed for the MCP server
-# Add non-root user and ability to change directory into /root
-RUN yum update -y && \
-    yum install -y lsof && \
-    yum clean all -y && \
-    rm -rf /var/cache/yum && \
-    groupadd --force --system app && \
-    useradd app -g app -d /app && \
-    chmod o+x /root
-
-
-# Install uv to be able to run mcp servers using stdio
-RUN pip install uv==0.7.11
-
-# Get the project from the uv layer
-COPY --from=uv --chown=app:app /root/.local /root/.local
-COPY --from=uv --chown=app:app /app/.venv /app/.venv
-
-# Get healthcheck script
-#COPY ./docker-healthcheck.sh /usr/local/bin/docker-healthcheck.sh
-
+# Project got copied to here
 WORKDIR /app
 
-# Run as non-root
-USER app
+# Place executables in the environment at the front of the path and include other binaries
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Get the project from the uv layer
+COPY --from=uv  /app/.venv .venv
 
 # Expose ports for MCP (8080)
 EXPOSE 8080
 
-# When running the container, add --db-path and a bind mount to the host's db file
-#HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "docker-healthcheck.sh" ]
-CMD ["mcp-server"]
+ENTRYPOINT [ "mcp-server" ]
+

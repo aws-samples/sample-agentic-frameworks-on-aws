@@ -91,21 +91,21 @@ def servers():
         # Start MCP server
         logger.info("Starting MCP Server...")
         mcp_process = subprocess.Popen([
-            "uv", "run", "mcp-server", "--transport", "streamable-http"
+            "mcp-server", "--transport", "streamable-http"
         ])
         processes.append(("MCP Server", mcp_process))
 
         # Start A2A server
         logger.info("Starting A2A Server...")
         a2a_process = subprocess.Popen([
-            "uv", "run", "a2a-server"
+            "a2a-server"
         ])
         processes.append(("A2A Server", a2a_process))
 
         # Start FastAPI server
         logger.info("Starting FastAPI Server...")
         fastapi_process = subprocess.Popen([
-            "uv", "run", "fastapi-server"
+            "fastapi-server"
         ])
         processes.append(("FastAPI Server", fastapi_process))
 

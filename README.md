@@ -6,7 +6,7 @@
 
 [![Open Issues](https://img.shields.io/github/issues/aws-samples/3P-Agentic-Frameworks)](https://github.com/aws-samples/3P-Agentic-Frameworks/issues)
 [![GitHub stars](https://img.shields.io/github/stars/aws-samples/3P-Agentic-Frameworks?style=social&label=Star)](https://github.com/aws-samples/3P-Agentic-Frameworks/stargazers)
-
+[![Github forks](https://img.shields.io/github/stars/aws-samples/3P-Agentic-Frameworks?style=social&label=Star)](https://github.com/aws-samples/3P-Agentic-Frameworks/stargazers)
 
 This repository provides examples and reference architectures for building autonomous agents using popular frameworks on AWS services. These examples demonstrate how to leverage AWS services to create production-ready agent applications for various industry verticals. Examples will cover different layers of the agent stack including foundational models, orchestration, memory, tools, observability and evals, deployment patterns.
 
@@ -19,7 +19,7 @@ This repository provides examples and reference architectures for building auton
 - [🧠 Agent Memory for Insurance Domain examples](https://github.com/aws-samples/3P-Agentic-Frameworks/tree/main/mem0/customer-support-agent)
 - [🛠️ End-to-End Serverless Multi-Agent System: A2A Protocol Implementation on AWS](https://github.com/aws-samples/3P-Agentic-Frameworks/tree/main/a2a-protocol/a2a-advisory-trading)
 - [🛡️ AWS Infrastructure Security Audit And Reporting Crew](https://github.com/aws-samples/3P-Agentic-Frameworks/tree/main/crewai/aws-security-auditor-crew)
-- [🤖 Automate Customer Support with Amazon Bedrock, LangGraph and Mistral models](https://github.com/aws-samples/3P-Agentic-Frameworks/blob/main/langgraph/Customer_Support_Automation_with_Bedrock_and_LangGraph.ipynb)
+- [🤖 Automate Customer Support with Amazon Bedrock, LangGraph and Mistral models](https://github.com/aws-samples/sample-agentic-frameworks-on-aws/tree/main/langgraph/customer_support)
 - [🤝 Multi-Agent Collaboration and Orchestration using LangGraph for Mistral Models](https://github.com/aws-samples/3P-Agentic-Frameworks/blob/main/langgraph/Multi_Agent_LangGraph_Mistral.ipynb)
 - [🔀 Mistral-AWS ecosystem LLM router - ReAct Agent with LangChain](https://github.com/aws-samples/3P-Agentic-Frameworks/blob/main/langgraph/Mistral-AWS-ecosystem-LLM-router.ipynb)
 - [👀 Vision QA Agent with Mistral and LlamaIndex](https://github.com/aws-samples/3P-Agentic-Frameworks/blob/main/llamaindex/Vision_QA_Agent_with_Mistral_and_LlamaIndex.ipynb)

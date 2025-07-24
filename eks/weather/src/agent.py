@@ -20,6 +20,7 @@ from mcp import StdioServerParameters, stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 from strands import Agent
 from strands.agent.conversation_manager import ConversationManager
+from strands.session.session_manager import SessionManager
 from strands.models import BedrockModel
 from strands.tools.mcp import MCPClient
 from strands.tools.mcp.mcp_agent_tool import MCPAgentTool
@@ -162,7 +163,10 @@ _mcp_tools_cache = None
 
 
 
-def create_agent(messages: Optional[Messages]=None,conversation_manager: Optional[ConversationManager] = None) -> Agent:
+def create_agent(messages: Optional[Messages]=None,
+                 conversation_manager: Optional[ConversationManager] = None,
+                 session_manager: Optional[SessionManager] = None
+    ) -> Agent:
     """
     Create and return an Agent instance with dynamically loaded MCP tools.
 
@@ -179,8 +183,10 @@ def create_agent(messages: Optional[Messages]=None,conversation_manager: Optiona
         # Create the agent with configuration from agent.md
         agent = Agent(
             name=agent_name,
+            agent_id= 'weather_agent',
             description=agent_description,
             model=bedrock_model,
+            session_manager=session_manager,
             system_prompt=system_prompt,
             tools=[agent_tools]+mcp_tools,
             messages=messages,

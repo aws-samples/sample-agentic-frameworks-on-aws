@@ -26,6 +26,8 @@ import uvicorn
 import jwt
 from strands import Agent
 from .agent import create_agent
+from strands.session.s3_session_manager import S3SessionManager
+from strands.session.file_session_manager import FileSessionManager
 
 
 OAUTH_JWKS_URL = os.environ.get('OAUTH_JWKS_URL')
@@ -38,57 +40,8 @@ logger.info(f"OAUTH_JWKS_URL: {OAUTH_JWKS_URL}")
 logger.info(f"Testing mode: {TESTING_MODE}")
 logger.info(f"Authentication enabled: {not TESTING_MODE}")
 
-# DynamoDB setup for agent state management (with in-memory fallback for testing)
-USE_DYNAMODB = os.environ.get('DYNAMODB_AGENT_STATE_TABLE_NAME') is not None
-
-if USE_DYNAMODB:
-    import boto3
-    from boto3.dynamodb.conditions import Key
-    ddb = boto3.resource('dynamodb')  # type: ignore
-    agent_state_table = ddb.Table(os.environ['DYNAMODB_AGENT_STATE_TABLE_NAME'])  # type: ignore
-    logger.info("Using DynamoDB for agent state management")
-else:
-    # In-memory storage for testing purposes
-    agent_state_memory: Dict[str, str] = {}
-    logger.info("Using in-memory storage for agent state management (testing mode)")
-
-
-def save_agent_state(user_id: str, agent: Agent):
-    """Save agent state to DynamoDB or in-memory storage"""
-    logger.info(f"saving agent state for user.id={user_id}")
-    messages = agent.messages
-
-    if USE_DYNAMODB:
-        agent_state_table.put_item(Item={
-            'user_id': user_id,
-            'state': json.dumps(messages)
-        })
-    else:
-        # Save to in-memory storage
-        agent_state_memory[user_id] = json.dumps(messages)
-
-
-def restore_agent_state(user_id: str):
-    """Restore agent state from DynamoDB or in-memory storage"""
-    logger.info(f"restoring agent state for user.id={user_id}")
-
-    if USE_DYNAMODB:
-        ddb_response = agent_state_table.get_item(Key={'user_id': user_id})
-        item = ddb_response.get('Item')
-        if item:
-            messages = json.loads(item['state'])
-        else:
-            messages = []
-    else:
-        # Restore from in-memory storage
-        state_json = agent_state_memory.get(user_id)
-        if state_json:
-            messages = json.loads(state_json)
-        else:
-            messages = []
-
-    print(f"messages={messages}")
-    return messages
+# S3 setup for agent state management (with file fallback for testing)
+USE_S3 = os.environ.get('SESSION_STORE_BUCKET_NAME') is not None
 
 
 # Pydantic models for request/response
@@ -180,15 +133,28 @@ class AgentFastAPI:
                 logger.info(f"User username: {username}")
                 logger.info(f"User id: {user_id}")
                 logger.info(f"User prompt: {prompt}")
-                messages = restore_agent_state(user_id)
+
+                if USE_S3:
+                    agent_state_bucket = os.environ['SESSION_STORE_BUCKET_NAME']
+                    logger.info("Using S3 for agent state management")
+                    session_manager = S3SessionManager(
+                        session_id=f"session_for_user_{user_id}",
+                        bucket=agent_state_bucket,
+                        prefix="agent_sessions"
+                    )
+                else:
+                    logger.info("Using File for agent state management")
+                    session_manager = FileSessionManager(
+                        session_id=user_id
+                    )
 
                 # Get agent instance (lazy loading)
-                agent = create_agent(messages)
+                agent = create_agent(session_manager=session_manager)
 
                 # Process the text with the agent
                 response = str(agent(prompt))
 
-                save_agent_state(user_id, agent)
+
 
                 return PromptResponse(text=response)
 
