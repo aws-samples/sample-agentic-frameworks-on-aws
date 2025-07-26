@@ -7,7 +7,7 @@ import pprint
 def add_oauth_routes(
     fastapi_app: FastAPI,
     OAUTH_CALLBACK_URI: str,
-    CHAT_UI_URL: str,
+    UI_URL: str,
 ):
     OAUTH_SIGNIN_URL = os.getenv("OAUTH_SIGNIN_URL")
     OAUTH_LOGOUT_URL = os.getenv("OAUTH_LOGOUT_URL")
@@ -52,13 +52,13 @@ def add_oauth_routes(
         req.session["access_token"] = access_token
         req.session["username"] = username
         print(f"username={username} access_token={access_token}")
-        return RedirectResponse(url=CHAT_UI_URL)
+        return RedirectResponse(url=UI_URL)
 
     @fastapi_app.get("/logout")
     async def logout(req: Request):
         print("handling /logout")
         req.session.clear()
         # Construct proper Cognito logout URL with required parameters
-        logout_url = f"{OAUTH_LOGOUT_URL}&logout_uri={CHAT_UI_URL}"
+        logout_url = f"{OAUTH_LOGOUT_URL}&logout_uri={UI_URL}"
         print(f"Redirecting to {logout_url}")
         return RedirectResponse(url=logout_url)

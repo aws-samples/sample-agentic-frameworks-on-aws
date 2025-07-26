@@ -15,7 +15,8 @@ AGENT_UI_ENDPOINT_URL_2 = os.getenv("AGENT_UI_ENDPOINT_URL_2", "http://localhost
 BASE_URL = os.getenv("BASE_URL","http://localhost:8000")
 BASE_PATH = os.getenv("BASE_PATH","")
 CHAT_PATH = os.getenv("CHAT_PATH", "/chat")
-CHAT_UI_URL = f"{BASE_URL}/{BASE_PATH}{CHAT_PATH}/"
+UI_URL = f"{BASE_URL}/{BASE_PATH}/" #important this url needs to end with /
+CHAT_UI_URL = f"{BASE_URL}/{BASE_PATH}{CHAT_PATH}/" #important this url need to end with /
 LOGIN_URL= f"{BASE_URL}/{BASE_PATH}/login"
 LOGOUT_URL= f"{BASE_URL}/{BASE_PATH}/logout"
 OAUTH_CALLBACK_URI = f"{BASE_URL}/{BASE_PATH}/callback"
@@ -25,6 +26,8 @@ print(f"AGENT_UI_ENDPOINT_URL_1:{AGENT_UI_ENDPOINT_URL_1}")
 print(f"AGENT_UI_ENDPOINT_URL_2:{AGENT_UI_ENDPOINT_URL_2}")
 print(f"BASE_URL:{BASE_URL}")
 print(f"BASE_PATH:{BASE_PATH}")
+print(f"CHAT_PATH:{CHAT_PATH}")
+print(f"UI_URL:{UI_URL}")
 print(f"CHAT_UI_URL:{CHAT_UI_URL}")
 print(f"LOGIN_URL:{LOGIN_URL}")
 print(f"LOGOUT_URL:{LOGOUT_URL}")
@@ -40,7 +43,7 @@ fastapi_app.add_middleware(SessionMiddleware, secret_key="secret")
 oauth.add_oauth_routes(
     fastapi_app,
     OAUTH_CALLBACK_URI=OAUTH_CALLBACK_URI,
-    CHAT_UI_URL=CHAT_UI_URL
+    CHAT_UI_URL=UI_URL
     )
 
 @fastapi_app.get("/")
