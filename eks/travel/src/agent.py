@@ -5,6 +5,7 @@ from strands_tools.a2a_client import A2AClientToolProvider
 
 from strands import Agent
 from strands.agent.conversation_manager import ConversationManager
+from strands.session.session_manager import SessionManager
 from strands.types.content import Messages
 from strands.models.bedrock import BedrockModel
 
@@ -132,7 +133,7 @@ agent_name, agent_description, system_prompt = load_agent_config()
 
 DEFAULT_A2A_CONFIG = """{
     "urls": [
-        "http://localhost:9000" # Weather A2A server
+        "http://localhost:9000"
     ]
 }"""
 
@@ -174,7 +175,7 @@ def _get_a2a_agent_urls() -> List[str]:
     # Return default list if no config file found or loading failed
     return json.loads(DEFAULT_A2A_CONFIG)["urls"]
 
-def create_agent(messages: Optional[Messages]=None,conversation_manager: Optional[ConversationManager] = None) -> Agent:
+def create_agent(messages: Optional[Messages]=None,conversation_manager: Optional[ConversationManager] = None,                  session_manager: Optional[SessionManager] = None) -> Agent:
     """
     Create and return an Agent instance with dynamically loaded MCP tools.
 
@@ -186,13 +187,13 @@ def create_agent(messages: Optional[Messages]=None,conversation_manager: Optiona
     provider = A2AClientToolProvider(known_agent_urls=_get_a2a_agent_urls())
 
     try:
-        # Load and combine tools from all enabled MCP servers (cached)
-
         # Create the agent with configuration from agent.md
         agent = Agent(
             name=agent_name,
+            agent_id='travel_agent',
             description=agent_description,
             model=bedrock_model,
+            session_manager=session_manager,
             system_prompt=system_prompt,
             tools=provider.tools,
             messages=messages,

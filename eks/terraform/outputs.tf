@@ -1,15 +1,3 @@
-
-
-output "travel_agent_table_name" {
-  description = "The Name of DynamodDb Table for Travel Agent"
-  value       = aws_dynamodb_table.weather_agent_state_table.name
-}
-
-output "travel_agent_table_arn" {
-  description = "The ARN of DynamoDB Table for Travel Agent"
-  value       = aws_dynamodb_table.weather_agent_state_table.arn
-}
-
 output "bedrock_model_id" {
   description = "Bedrock mode id for the agents"
   value       = var.bedrock_model_id
@@ -89,4 +77,9 @@ output "ecr_weather_agent_ui_repository_url" {
 output "weather_agent_session_store_bucket_name" {
   description = "S3 Bucket name for weather agent session"
   value       = aws_s3_bucket.weather_agent_session_store.bucket
+}
+
+output "travel_agent_session_store_bucket_name" {
+  description = "S3 Bucket name for travel agent session"
+  value       = aws_s3_bucket.travel_agent_session_store.bucket
 }

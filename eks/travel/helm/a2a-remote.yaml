@@ -3,6 +3,6 @@ a2a:
   a2a_agents.json: |
     {
       "urls": [
-        "http://weather-a2a:9000/"
+        "http://weather-agent.weather-agent:9000/"
       ]
     }

@@ -28,12 +28,6 @@ variable "weather_service_account" {
   default     = "weather-agent"
 }
 
-variable "travel_prefix" {
-  description = "The name of dynamodb table for travel agent"
-  type        = string
-  default     = "travel-agent"
-}
-
 variable "travel_namespace" {
   description = "Kubernetes namespace"
   type        = string
