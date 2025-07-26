@@ -38,14 +38,14 @@ variable "bedrock_model_id" {
 
 variable "cognito_additional_redirect_uri" {
   description = "Additional allowed redirect URI after authorization"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = ""
 }
 
 variable "cognito_additional_logout_uri" {
   description = "Additional allowed logout URIs"
-  type        = list(string)
-  default     = []
+  type        = string
+  default     = ""
 }
 
 variable "cognito_prefix_user_pool" {
