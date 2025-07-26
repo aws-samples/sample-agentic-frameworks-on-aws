@@ -189,8 +189,10 @@ Review the new images cluster in the console by visiting the [AWS ECR Console](h
 
 Deploy the MCP Server:
 ```bash
-helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} --create-namespace \
+helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/helm \
+  --install \
+  --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
+  --create-namespace \
   --set image.repository=${ECR_REPO_WEATHER_MCP_URI}
 
 # Wait for MCP server to be ready
@@ -204,8 +206,10 @@ Deploy the Agent Service:
 source .env
 
 # Deploy the weather agent
-helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} --create-namespace \
+helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
+  --install \
+  --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
+  --create-namespace \
   --set image.repository=${ECR_REPO_WEATHER_AGENT_URI} \
   --set env.OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
   --set env.SESSION_STORE_BUCKET_NAME=${SESSION_STORE_BUCKET_NAME} \
@@ -231,11 +235,16 @@ kubectl create secret generic ${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
 
 # Deploy the web UI
-helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} web/helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} --create-namespace \
-  --set secret.name=${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
+helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} web/helm \
+  --install \
+  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
+  --create-namespace \
   --set image.repository=${ECR_REPO_WEATHER_AGENT_UI_URI} \
-  --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}/prompt"
+  --set secret.name=${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
+  --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAME}/prompt" \
+  --set service.type="${KUBERNETES_APP_WEATHER_AGENT_UI_SERVICE_TYPE:-ClusterIP}" \
+  --set env.BASE_PATH="${KUBERNETES_APP_WEATHER_AGENT_UI_BASE_PATH:-${IDE_URL:+proxy/8000}}" \
+  --set env.BASE_URL="${IDE_URL:-http://localhost:8000}"
 
 # Wait for UI to be ready
 kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \

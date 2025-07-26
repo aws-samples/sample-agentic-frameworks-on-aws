@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 import os
+import pprint
 
 def add_oauth_routes(
     fastapi_app: FastAPI,
@@ -35,10 +36,14 @@ def add_oauth_routes(
 
     @fastapi_app.get("/login")
     async def login(req: Request):
+        print("handling /login")
+        print(f"returning redirect with OAUTH_CALLBACK_URI={OAUTH_CALLBACK_URI}")
+        #pprint.pprint(vars(req))
         return await oauth.oauth_provider.authorize_redirect(req, OAUTH_CALLBACK_URI)
 
     @fastapi_app.get("/callback")
     async def callback(req: Request):
+        print("handling /callback")
         tokens = await oauth.oauth_provider.authorize_access_token(req)
         print(tokens)
         access_token = tokens["access_token"]
@@ -53,6 +58,7 @@ def add_oauth_routes(
     async def logout(req: Request):
         print("handling /logout")
         req.session.clear()
+        # Construct proper Cognito logout URL with required parameters
         logout_url = f"{OAUTH_LOGOUT_URL}&logout_uri={CHAT_UI_URL}"
-        print(f"Redirecrig to {logout_url}")
+        print(f"Redirecting to {logout_url}")
         return RedirectResponse(url=logout_url)
