@@ -18,6 +18,7 @@ user_avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png"
 bot_avatar = "https://cdn-icons-png.flaticon.com/512/4712/4712042.png"
 
 fastapi_app = FastAPI()
+
 fastapi_app.add_middleware(SessionMiddleware, secret_key="secret")
 oauth.add_oauth_routes(fastapi_app)
 
@@ -107,9 +108,12 @@ with gr.Blocks() as gradio_app:
 gr.mount_gradio_app(fastapi_app, gradio_app, path="/chat", auth_dependency=check_auth)
 
 def main():
-    host = os.getenv("FASTAPI_HOST", "0.0.0.0")
-    port = int(os.getenv("FASTAPI_PORT", "8000"))
-    uvicorn.run(fastapi_app, host=host, port=port)
+    uvicorn.run(
+        fastapi_app, 
+        host=os.getenv("FASTAPI_HOST", "0.0.0.0"), 
+        port=int(os.getenv("FASTAPI_PORT", "8000")),
+        timeout_graceful_shutdown=1,
+    )
 
 if __name__ == "__main__":
     main()
