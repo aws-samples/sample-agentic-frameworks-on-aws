@@ -12,25 +12,46 @@ load_dotenv()  # take environment variables
 
 AGENT_UI_ENDPOINT_URL_1 = os.getenv("AGENT_UI_ENDPOINT_URL_1", "http://localhost:3000/prompt")
 AGENT_UI_ENDPOINT_URL_2 = os.getenv("AGENT_UI_ENDPOINT_URL_2", "http://localhost:4000/prompt")
-print(f"AGENT_UI_ENDPOINT_URL_1={AGENT_UI_ENDPOINT_URL_1}")
-print(f"AGENT_UI_ENDPOINT_URL_2={AGENT_UI_ENDPOINT_URL_2}")
+BASE_URL = os.getenv("BASE_URL","http://localhost:8000")
+BASE_PATH = os.getenv("BASE_PATH","")
+CHAT_PATH = os.getenv("CHAT_PATH", "/chat")
+CHAT_UI_URL = f"{BASE_URL}/{BASE_PATH}{CHAT_PATH}/"
+LOGIN_URL= f"{BASE_URL}/{BASE_PATH}/login"
+LOGOUT_URL= f"{BASE_URL}/{BASE_PATH}/logout"
+OAUTH_CALLBACK_URI = f"{BASE_URL}/{BASE_PATH}/callback"
+    
+
+print(f"AGENT_UI_ENDPOINT_URL_1:{AGENT_UI_ENDPOINT_URL_1}")
+print(f"AGENT_UI_ENDPOINT_URL_2:{AGENT_UI_ENDPOINT_URL_2}")
+print(f"BASE_URL:{BASE_URL}")
+print(f"BASE_PATH:{BASE_PATH}")
+print(f"CHAT_UI_URL:{CHAT_UI_URL}")
+print(f"LOGIN_URL:{LOGIN_URL}")
+print(f"LOGOUT_URL:{LOGOUT_URL}")
+print(f"OAUTH_CALLBACK_URI:{OAUTH_CALLBACK_URI}")
+   
+
 user_avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png"
 bot_avatar = "https://cdn-icons-png.flaticon.com/512/4712/4712042.png"
 
 fastapi_app = FastAPI()
 
 fastapi_app.add_middleware(SessionMiddleware, secret_key="secret")
-oauth.add_oauth_routes(fastapi_app)
+oauth.add_oauth_routes(
+    fastapi_app,
+    OAUTH_CALLBACK_URI=OAUTH_CALLBACK_URI,
+    CHAT_UI_URL=CHAT_UI_URL
+    )
 
 @fastapi_app.get("/")
 async def root():
-    print("🏠 Root endpoint accessed")
-    return RedirectResponse(url="./chat/")
+    print(f"🏠 Root endpoint accessed redirecting to {CHAT_UI_URL}")
+    return RedirectResponse(url=CHAT_UI_URL)
 
 def check_auth(req: Request):
     if not "access_token" in req.session or not "username" in req.session:
-        print("check_auth::not found, redirecting to /login")
-        raise HTTPException(status_code=302, detail="Redirecting to login", headers={"Location": "/login"})
+        print(f"check_auth:: access_token not found or username not found, redirecting to {LOGIN_URL}")
+        raise HTTPException(status_code=302, detail="Redirecting to login", headers={"Location": LOGIN_URL})
 
     username = req.session["username"]
 
@@ -75,6 +96,11 @@ def on_gradio_app_load(request: gr.Request):
         content=f"Hi {request.username}, I'm your friendly corporate agent. Tell me how I can help. "
     )], "Single Agent(Weather)"  # Default to Single Agent(Weather) mode
 
+def logout_click(request: gr.Request):
+    print(f"logout function")
+    #request.session.clear()
+    return f"Logout ({request.username})", [], "Single Agent(Weather)"
+
 with gr.Blocks() as gradio_app:
     header = gr.Markdown("Welcome to the Agent")
 
@@ -100,12 +126,14 @@ with gr.Blocks() as gradio_app:
     logout_button = gr.Button(value="Logout", variant="secondary")
     logout_button.click(
         fn=None,
-        js="() => window.location.href='/logout'"
+        js=f"() => {{ console.log('Logout Button clicked!'); console.log('Redirecting to: {LOGOUT_URL}'); window.location.href='{LOGOUT_URL}'; }}"
     )
+
+#        js=f"() => {{ console.log('Logout Button clicked!'); console.log('Redirecting to: {LOGOUT_URL}'); window.location.href='{LOGOUT_URL}'; }}"
 
     gradio_app.load(on_gradio_app_load, inputs=None, outputs=[logout_button, chat.chatbot, agent_mode])
 
-gr.mount_gradio_app(fastapi_app, gradio_app, path="/chat", auth_dependency=check_auth)
+gr.mount_gradio_app(fastapi_app, gradio_app, path=CHAT_PATH, auth_dependency=check_auth)
 
 def main():
     uvicorn.run(

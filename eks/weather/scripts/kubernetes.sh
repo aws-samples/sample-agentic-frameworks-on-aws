@@ -39,11 +39,9 @@ helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} web/helm \
   --set image.repository=${ECR_REPO_WEATHER_AGENT_UI_URI} \
   --set secret.name=${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
   --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAME}/prompt" \
-  --set service.type="${KUBERNETES_APP_WEATHER_AGENT_UI_SERVICE_TYPE:-ClusterIP}"
-
-# TODO: Implement VSCode Proxy
-#  --set env.BASE_PATH="${KUBERNETES_APP_WEATHER_AGENT_UI_BASE_PATH:-''}" \
-#  --set env.BASE_URL="${IDE_URL:-http://localhost:8000}"
+  --set service.type="${KUBERNETES_APP_WEATHER_AGENT_UI_SERVICE_TYPE:-ClusterIP}" \
+  --set env.BASE_PATH="${KUBERNETES_APP_WEATHER_AGENT_UI_BASE_PATH:-''}" \
+  --set env.BASE_URL="${IDE_URL:-http://localhost:8000}"
 
 
 # Wait at the end this way karpenter can select a node for the 3 pods

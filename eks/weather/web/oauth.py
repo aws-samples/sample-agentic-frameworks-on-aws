@@ -3,14 +3,25 @@ from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 import os
 
-def add_oauth_routes(fastapi_app: FastAPI):
+def add_oauth_routes(
+    fastapi_app: FastAPI,
+    OAUTH_CALLBACK_URI: str,
+    CHAT_UI_URL: str,
+):
     OAUTH_SIGNIN_URL = os.getenv("OAUTH_SIGNIN_URL")
     OAUTH_LOGOUT_URL = os.getenv("OAUTH_LOGOUT_URL")
     OAUTH_WELL_KNOWN_ENDPOINT_URL = os.getenv("OAUTH_WELL_KNOWN_URL")
     OAUTH_CLIENT_ID = os.getenv("OAUTH_CLIENT_ID")
     OAUTH_CLIENT_SECRET = os.getenv("OAUTH_CLIENT_SECRET")
-    OAUTH_CALLBACK_URI = "http://localhost:8000/callback"
-    REDIRECT_AFTER_LOGOUT_URL = "http://localhost:8000/chat"
+
+    # Print environment variables and derived URLs
+    print(f"OAUTH_SIGNIN_URL:{OAUTH_SIGNIN_URL}")
+    print(f"OAUTH_LOGOUT_URL:{OAUTH_LOGOUT_URL}") 
+    print(f"OAUTH_WELL_KNOWN_ENDPOINT_URL:{OAUTH_WELL_KNOWN_ENDPOINT_URL}")
+    print(f"OAUTH_CLIENT_ID:{OAUTH_CLIENT_ID}")
+    print(f"OAUTH_CLIENT_SECRET:{OAUTH_CLIENT_SECRET}")
+ 
+
 
     oauth = OAuth()
     oauth.register(
@@ -36,10 +47,12 @@ def add_oauth_routes(fastapi_app: FastAPI):
         req.session["access_token"] = access_token
         req.session["username"] = username
         print(f"username={username} access_token={access_token}")
-        return RedirectResponse(url="/chat")
+        return RedirectResponse(url=CHAT_UI_URL)
 
     @fastapi_app.get("/logout")
     async def logout(req: Request):
+        print("handling /logout")
         req.session.clear()
-        logout_url = f"{OAUTH_LOGOUT_URL}&logout_uri={REDIRECT_AFTER_LOGOUT_URL}"
+        logout_url = f"{OAUTH_LOGOUT_URL}&logout_uri={CHAT_UI_URL}"
+        print(f"Redirecrig to {logout_url}")
         return RedirectResponse(url=logout_url)
