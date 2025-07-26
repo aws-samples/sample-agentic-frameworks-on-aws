@@ -4,7 +4,7 @@ A generic AI agent framework built with Strands Agents, MCP (Model Context Proto
 
 ## Example
 
-Deploy a complete AI agent system with Web UI, Agent Service, and MCP Server to Amazon EKS in just a few steps.
+Deploy a complete AI agent system with Agent UI, Agent Service, and MCP Server to Amazon EKS in just a few steps.
 
 ### Prerequisites
 
@@ -32,15 +32,15 @@ graph TB
         end
 
         subgraph "Amazon EKS Cluster"
-            subgraph "Web UI Pod"
-                UI_POD[Weather UI<br/>FastAPI:8000<br/>OAuth Auth]
+            subgraph "agent-ui namespace"
+                UI_POD[Agent UI<br/>FastAPI:8000<br/>OAuth Auth]
             end
 
-            subgraph "Agent Pod"
+            subgraph "weather-agent namespace"
                 AGENT_POD[Weather Agent<br/>MCP:8080 A2A:9000 REST:3000]
             end
 
-            subgraph "MCP Server Pod"
+            subgraph "mcp-servers namespace"
                 MCP_POD[Weather MCP Server<br/>HTTP:8080<br/>Tools: forecast, alert]
             end
         end
@@ -57,7 +57,7 @@ graph TB
     UI_POD -->|REST API :3000| AGENT_POD
     AGENT_POD -->|MCP HTTP :8080| MCP_POD
     AGENT_POD -->|Invoke LLM| BEDROCK
-    USER -->|Authenticated Web UI| UI_POD
+    USER -->|Authenticated Agent UI| UI_POD
 
     classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:#fff
     classDef k8s fill:#326CE5,stroke:#fff,stroke-width:2px,color:#fff
@@ -69,11 +69,10 @@ graph TB
 ```
 
 **Key Components:**
-- **Web UI**: FastAPI-based frontend with OAuth authentication (port 8000)
+- **Agent UI**: FastAPI-based frontend with OAuth authentication (port 8000)
 - **Agent Service**: Triple protocol support - MCP (8080), A2A (9000), REST API (3000)
 - **MCP Server**: Dedicated weather tools server providing forecast/alert capabilities (port 8080)
-- **Multi-Architecture**: AMD64 support for all three services
-- **Security**: EKS Pod Identity for Bedrock access, OAuth JWT validation
+- **Security**: EKS Pod Identity for Bedrock access, OAuth JWT validation for user authentication
 
 
 ## Agent Code
