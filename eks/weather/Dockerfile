@@ -54,9 +54,11 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Get the project from the uv layer
 COPY --from=uv  /app/.venv .venv
 
-# Copy configuration files needed at runtime
+# Copy configuration files needed at runtime if not provided via helm chart
 COPY agent.md agent.md
+COPY mcp.json mcp.json
 COPY mcp-servers mcp-servers
+
 
 # Expose ports for MCP (8080), A2A (9000), and FastAPI (3000)
 EXPOSE 8080 9000 3000

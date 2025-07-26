@@ -66,9 +66,9 @@ output "ecr_weather_agent_repository_url" {
   value       = aws_ecr_repository.weather_agent.repository_url
 }
 
-output "ecr_weather_agent_ui_repository_url" {
-  description = "The URL of the Weather Agent UI ECR repository"
-  value       = aws_ecr_repository.weather_agent_ui.repository_url
+output "ecr_agent_ui_repository_url" {
+  description = "The URL of the Agent UI ECR repository"
+  value       = aws_ecr_repository.agent_ui.repository_url
 }
 
 output "weather_agent_session_store_bucket_name" {

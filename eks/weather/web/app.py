@@ -43,7 +43,7 @@ fastapi_app.add_middleware(SessionMiddleware, secret_key="secret")
 oauth.add_oauth_routes(
     fastapi_app,
     OAUTH_CALLBACK_URI=OAUTH_CALLBACK_URI,
-    CHAT_UI_URL=UI_URL
+    UI_URL=UI_URL
     )
 
 @fastapi_app.get("/")

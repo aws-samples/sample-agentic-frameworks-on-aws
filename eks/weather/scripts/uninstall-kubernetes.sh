@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Uninstall the Weather Web UI from the cluster:
-helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
-kubectl delete secret ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
+helm uninstall ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
+kubectl delete secret ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
 
 # Uninstall the Weather Agent from the cluster:
 helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_NAME} \

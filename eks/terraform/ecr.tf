@@ -24,8 +24,8 @@ resource "aws_ecr_repository" "weather_agent" {
   tags = local.tags
 }
 
-resource "aws_ecr_repository" "weather_agent_ui" {
-  name                 = "agents-on-eks/weather-agent-ui"
+resource "aws_ecr_repository" "agent_ui" {
+  name                 = "agents-on-eks/agent-ui"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 
