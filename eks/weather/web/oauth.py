@@ -22,10 +22,6 @@ def add_oauth_routes(fastapi_app: FastAPI):
         redirect_uri=OAUTH_CALLBACK_URI,
     )
 
-    @fastapi_app.get("/")
-    async def root():
-        return RedirectResponse(url="/chat")
-
     @fastapi_app.get("/login")
     async def login(req: Request):
         return await oauth.oauth_provider.authorize_redirect(req, OAUTH_CALLBACK_URI)

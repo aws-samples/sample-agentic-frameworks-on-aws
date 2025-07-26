@@ -1,6 +1,7 @@
 import os
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import RedirectResponse
 import uvicorn
 import gradio as gr
 import httpx
@@ -19,6 +20,11 @@ bot_avatar = "https://cdn-icons-png.flaticon.com/512/4712/4712042.png"
 fastapi_app = FastAPI()
 fastapi_app.add_middleware(SessionMiddleware, secret_key="secret")
 oauth.add_oauth_routes(fastapi_app)
+
+@fastapi_app.get("/")
+async def root():
+    print("🏠 Root endpoint accessed")
+    return RedirectResponse(url="./chat/")
 
 def check_auth(req: Request):
     if not "access_token" in req.session or not "username" in req.session:
@@ -60,6 +66,9 @@ def chat(message, history, agent_mode, request: gr.Request):
     return response_text
 
 def on_gradio_app_load(request: gr.Request):
+    # if request.username not present set username
+    if not request.username:
+        request.username = "Alice"
     return f"Logout ({request.username})", [gr.ChatMessage(
         role="assistant",
         content=f"Hi {request.username}, I'm your friendly corporate agent. Tell me how I can help. "
