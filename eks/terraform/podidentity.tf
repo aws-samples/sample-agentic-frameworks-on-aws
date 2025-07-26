@@ -14,21 +14,21 @@ module "weather_agent_pod_identity" {
       ]
       resources = ["*"]
     },
-     {
+    {
       sid = "AccessBucket"
       actions = [
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject"
       ]
-      resources = ["${aws_s3_bucket.weather_agent_session_store.arn}/*"]
+      resources = ["${aws_s3_bucket.weather_agent_session_store.arn}/*", "${aws_s3_bucket.travel_agent_session_store.arn}/*"]
     },
     {
       sid = "AccessBuckets"
       actions = [
         "s3:ListBucket",
       ]
-      resources = [aws_s3_bucket.weather_agent_session_store.arn]
+      resources = [aws_s3_bucket.weather_agent_session_store.arn, aws_s3_bucket.travel_agent_session_store.arn]
     }
   ]
 
@@ -38,6 +38,12 @@ module "weather_agent_pod_identity" {
       cluster_name    = module.eks.cluster_name
       namespace       = var.weather_namespace
       service_account = var.weather_service_account
+    }
+
+    travel-agent = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = var.travel_namespace
+      service_account = var.travel_service_account
     }
   }
 
