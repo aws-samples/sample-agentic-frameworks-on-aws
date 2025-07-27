@@ -32,11 +32,11 @@ aws cognito-idp admin-set-user-password --user-pool-id $OAUTH_USER_POOL_ID --use
 aws cognito-idp admin-set-user-password --user-pool-id $OAUTH_USER_POOL_ID --username Bob --password "Passw0rd@" --permanent
 
 echo "" > $UI_AGENT_DST_FILE_NAME
-echo "OAUTH_CLIENT_ID=\"$OAUTH_CLIENT_ID\"" >> $UI_AGENT_DST_FILE_NAME
-echo "OAUTH_CLIENT_SECRET=\"$OAUTH_CLIENT_SECRET\"" >> $UI_AGENT_DST_FILE_NAME
-echo "OAUTH_LOGOUT_URL=\"$OAUTH_LOGOUT_URL\"" >> $UI_AGENT_DST_FILE_NAME
-echo "OAUTH_WELL_KNOWN_URL=\"$OAUTH_WELL_KNOWN_URL\"" >> $UI_AGENT_DST_FILE_NAME
-echo "OAUTH_JWKS_URL=\"$OAUTH_JWKS_URL\"" >> $UI_AGENT_DST_FILE_NAME
+echo "OAUTH_CLIENT_ID=$OAUTH_CLIENT_ID" >> $UI_AGENT_DST_FILE_NAME
+echo "OAUTH_CLIENT_SECRET=$OAUTH_CLIENT_SECRET" >> $UI_AGENT_DST_FILE_NAME
+echo "OAUTH_LOGOUT_URL=$OAUTH_LOGOUT_URL" >> $UI_AGENT_DST_FILE_NAME
+echo "OAUTH_WELL_KNOWN_URL=$OAUTH_WELL_KNOWN_URL" >> $UI_AGENT_DST_FILE_NAME
+echo "OAUTH_JWKS_URL=$OAUTH_JWKS_URL" >> $UI_AGENT_DST_FILE_NAME
 
 
 
@@ -45,7 +45,7 @@ ECR_REPO_AGENT_UI_URI=$(terraform -chdir="$ROOTDIR/$TERRAFORM_DIRECTORY" output 
 cat <<EOF > $UI_AGENT_HELM_VALUES
 image:
   repository: $ECR_REPO_AGENT_UI_URI
-  env:
-    BASE_PATH: "${IDE_URL:+/proxy/8000}"
-    BASE_URL: "${IDE_URL:-http://localhost:8000}"
+env:
+  BASE_PATH: "${IDE_URL:+/proxy/8000}"
+  BASE_URL: "${IDE_URL:-http://localhost:8000}"
 EOF
