@@ -9,17 +9,14 @@ helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/h
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_MCP_URI}
+  -f mcp-servers/weather-mcp-server/helm/workshop-values.yaml
 
 # Deploy the Agent
 helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_AGENT_URI} \
-  --set env.OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
-  --set env.SESSION_STORE_BUCKET_NAME=${SESSION_STORE_BUCKET_NAME} \
-  -f helm/mcp-remote.yaml
+  -f helm/workshop-values.yaml
 
 # Create OAuth secret for the Agent UI
 kubectl create ns ${KUBERNETES_APP_AGENT_UI_NAMESPACE} || true
@@ -38,12 +35,7 @@ helm upgrade ${KUBERNETES_APP_AGENT_UI_NAME} web/helm \
   --install \
   --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_AGENT_UI_URI} \
-  --set secret.name=${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
-  --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAME}/prompt" \
-  --set service.type="${KUBERNETES_APP_AGENT_UI_SERVICE_TYPE:-ClusterIP}" \
-  --set env.BASE_PATH="${KUBERNETES_APP_AGENT_UI_BASE_PATH:-${IDE_URL:+proxy/8000}}" \
-  --set env.BASE_URL="${IDE_URL:-http://localhost:8000}"
+  -f web/helm/workshop-values.yaml
 
 
 # Wait at the end this way karpenter can select a node for the 3 pods
@@ -58,5 +50,5 @@ kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
 
 # Wait for Agent UI to be ready
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
-  rollout status deployment/${KUBERNETES_APP_WEATHER_AGENT_UI_NAME}
+kubectl rollout status deployment ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}

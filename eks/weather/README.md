@@ -98,10 +98,6 @@ This is how an Agent gets created:
 
 ## Deployment Steps
 
-TLDR (In case you don't want to run all the steps manually and see the app running)
-```bash
-source ./scripts/run.sh
-```
 
 ### 1. Environment Setup
 
@@ -201,7 +197,7 @@ helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/h
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_MCP_URI}
+  -f mcp-servers/weather-mcp-server/helm/workshop-values.yaml
 
 # Wait for MCP server to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_MCP_NAME} \
@@ -210,18 +206,12 @@ kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_MCP_NAME} \
 
 Deploy the Agent Service:
 ```bash
-# Load agent environment variables
-source .env
-
 # Deploy the Agent
 helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_AGENT_URI} \
-  --set env.OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
-  --set env.SESSION_STORE_BUCKET_NAME=${SESSION_STORE_BUCKET_NAME} \
-  -f helm/mcp-remote.yaml
+  -f helm/workshop-values.yaml
 
 # Wait for Agent to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
@@ -230,54 +220,45 @@ kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
 
 Deploy the Agent UI:
 ```bash
-# Load UI environment variables
-source web/.env
-
 # Create OAuth secret for the Agent UI
-kubectl create ns ${KUBERNETES_APP_AGENT_UI_NAMESPACE} || true
+kubectl create ns ${KUBERNETES_APP_AGENT_UI_NAMESPACE} 2>/dev/null || true
 kubectl delete secret ${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
   --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} 2>/dev/null || true
 kubectl create secret generic ${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
-  --from-literal=OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID} \
-  --from-literal=OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} \
-  --from-literal=OAUTH_LOGOUT_URL=${OAUTH_LOGOUT_URL} \
-  --from-literal=OAUTH_WELL_KNOWN_URL=${OAUTH_WELL_KNOWN_URL} \
-  --from-literal=OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
-  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
+  --from-env-file web/.env
 
 # Deploy the Agent UI
 helm upgrade ${KUBERNETES_APP_AGENT_UI_NAME} web/helm \
   --install \
   --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
   --create-namespace \
-  --set image.repository=${ECR_REPO_AGENT_UI_URI} \
-  --set secret.name=${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
-  --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAME}/prompt" \
-  --set service.type="${KUBERNETES_APP_AGENT_UI_SERVICE_TYPE:-ClusterIP}" \
-  --set env.BASE_PATH="${KUBERNETES_APP_AGENT_UI_BASE_PATH:-${IDE_URL:+proxy/8000}}" \
-  --set env.BASE_URL="${IDE_URL:-http://localhost:8000}"
+  -f web/helm/workshop-values.yaml
 
 
 # Wait for Agent UI to be ready
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
-  rollout status deployment/${KUBERNETES_APP_WEATHER_AGENT_UI_NAME}
+kubectl rollout status deployment ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
 ```
 
 Review the 3 pods running (MCP, Agent, UI) or go to [AWS EKS Console Resource view](https://console.aws.amazon.com/eks/clusters/agentic-ai-on-eks?&selectedResourceId=pods&selectedTab=cluster-resources-tab)
 
 Or check in the terminal
 ```bash
+kubectl get pods -n mcp-servers
 kubectl get pods -n weather-agent
 kubectl get pods -n agent-ui
 ```
 Expected output should look like this, all pods in `Running` status:
 ```
-NAME                             READY   STATUS    RESTARTS   AGE
-weather-agent-7687764cd5-qxb92   1/1     Running   0          1m
-weather-mcp-885867d86-bjjd6      1/1     Running   0          1m
+NAME                            READY   STATUS    RESTARTS   AGE
+weather-mcp-885867d86-w9986     1/1     Running   0          80s
 
-NAME                        READY   STATUS    RESTARTS   AGE
-agent-ui-775ddb89b4-cv7pt   1/1     Running   0          1m
+NAME                            READY   STATUS    RESTARTS   AGE
+weather-agent-97b7bfb55-7q8fs   1/1     Running   0          92s
+
+NAME                            READY   STATUS    RESTARTS   AGE
+agent-ui-6f4c6d889-r442z        1/1     Running   0          44s
 ```
 
 ### 5. Access the Weather Agent UI
@@ -288,7 +269,7 @@ If running this lab from a workshop environment get the Agent url with this comm
 ```bash
 echo "$IDE_URL/proxy/8000/"
 ```
-Or if running locally on your on your developer computer then use this url http://localhost:8000/
+Or if running locally on your on your developer computer then use this url http://localhost:8000/chat/
 
 Print the username and password
 ```bash
@@ -335,8 +316,8 @@ When you're done, clean up to avoid charges:
 
 ```bash
 # Uninstall applications
-helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
+helm uninstall ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
 helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
 helm uninstall ${KUBERNETES_APP_WEATHER_MCP_NAME} \

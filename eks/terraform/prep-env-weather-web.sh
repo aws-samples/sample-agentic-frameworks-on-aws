@@ -34,3 +34,15 @@ echo "OAUTH_WELL_KNOWN_URL=\"$OAUTH_WELL_KNOWN_URL\"" >> $WEB_DST_FILE_NAME
 echo "OAUTH_JWKS_URL=\"$OAUTH_JWKS_URL\"" >> $WEB_DST_FILE_NAME
 
 echo "> Done"
+
+AGENT_UI_HELM_VALUES_DST_FILE_NAME=${AGENT_UI_HELM_VALUES_DST_FILE_NAME:-../weather/web/helm/workshop-values.yaml}
+ECR_REPO_AGENT_UI_URI=$(terraform output -json ecr_agent_ui_repository_url)
+echo "> Creating $WEATHER_MCP_HELM_VALUES_DST_FILE_NAME"
+echo "ECR_REPO_AGENT_UI_URI=$ECR_REPO_AGENT_UI_URI"
+cat <<EOF > $AGENT_UI_HELM_VALUES_DST_FILE_NAME
+image:
+  repository: $ECR_REPO_AGENT_UI_URI
+  env:
+    BASE_PATH: "${IDE_URL:+/proxy/8000}"
+    BASE_URL: "${IDE_URL:-http://localhost:8000}"
+EOF

@@ -13,14 +13,18 @@ load_dotenv()  # take environment variables
 AGENT_UI_ENDPOINT_URL_1 = os.getenv("AGENT_UI_ENDPOINT_URL_1", "http://localhost:3000/prompt")
 AGENT_UI_ENDPOINT_URL_2 = os.getenv("AGENT_UI_ENDPOINT_URL_2", "http://localhost:4000/prompt")
 BASE_URL = os.getenv("BASE_URL","http://localhost:8000")
-BASE_PATH = os.getenv("BASE_PATH","")
+BASE_PATH = os.getenv("BASE_PATH","/")
+# check if BASE_PATH is empty string and set to "/"
+if BASE_PATH == "":
+    BASE_PATH = "/"
 CHAT_PATH = os.getenv("CHAT_PATH", "/chat")
-UI_URL = f"{BASE_URL}/{BASE_PATH}/" #important this url needs to end with /
-CHAT_UI_URL = f"{BASE_URL}/{BASE_PATH}{CHAT_PATH}/" #important this url need to end with /
-LOGIN_URL= f"{BASE_URL}/{BASE_PATH}/login"
-LOGOUT_URL= f"{BASE_URL}/{BASE_PATH}/logout"
-OAUTH_CALLBACK_URI = f"{BASE_URL}/{BASE_PATH}/callback"
-    
+
+# the following urls if BASE_PATH is / then another / after BASE_PATH is not need it
+CHAT_UI_URL = f"{BASE_URL}{BASE_PATH}{'chat/' if BASE_PATH.endswith('/') else '/chat/'}" #important this url need to end with /
+UI_URL = f"{BASE_URL}{BASE_PATH}{'' if BASE_PATH.endswith('/') else '/'}" #important this url needs to end with /
+LOGIN_URL = f"{BASE_URL}{BASE_PATH}{'login' if BASE_PATH.endswith('/') else '/login'}"
+LOGOUT_URL = f"{BASE_URL}{BASE_PATH}{'logout' if BASE_PATH.endswith('/') else '/logout'}"
+OAUTH_CALLBACK_URI = f"{BASE_URL}{BASE_PATH}{'callback' if BASE_PATH.endswith('/') else '/callback'}"
 
 print(f"AGENT_UI_ENDPOINT_URL_1:{AGENT_UI_ENDPOINT_URL_1}")
 print(f"AGENT_UI_ENDPOINT_URL_2:{AGENT_UI_ENDPOINT_URL_2}")
@@ -32,7 +36,7 @@ print(f"CHAT_UI_URL:{CHAT_UI_URL}")
 print(f"LOGIN_URL:{LOGIN_URL}")
 print(f"LOGOUT_URL:{LOGOUT_URL}")
 print(f"OAUTH_CALLBACK_URI:{OAUTH_CALLBACK_URI}")
-   
+
 
 user_avatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png"
 bot_avatar = "https://cdn-icons-png.flaticon.com/512/4712/4712042.png"
@@ -140,8 +144,8 @@ gr.mount_gradio_app(fastapi_app, gradio_app, path=CHAT_PATH, auth_dependency=che
 
 def main():
     uvicorn.run(
-        fastapi_app, 
-        host=os.getenv("FASTAPI_HOST", "0.0.0.0"), 
+        fastapi_app,
+        host=os.getenv("FASTAPI_HOST", "0.0.0.0"),
         port=int(os.getenv("FASTAPI_PORT", "8000")),
         timeout_graceful_shutdown=1,
     )

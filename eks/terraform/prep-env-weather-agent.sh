@@ -20,12 +20,21 @@ echo "BEDROCK_MODEL_ID=$BEDROCK_MODEL_ID" >> $WEATHER_DST_FILE_NAME
 echo "SESSION_STORE_BUCKET_NAME=$SESSION_STORE_BUCKET_NAME" >> $WEATHER_DST_FILE_NAME
 echo "> Done"
 
+WEATHER_MCP_HELM_VALUES_DST_FILE_NAME=${WEATHER_MCP_HELM_VALUES_DST_FILE_NAME:-../weather/mcp-servers/weather-mcp-server/helm/workshop-values.yaml}
+ECR_REPO_WEATHER_MCP_URI=$(terraform output -json ecr_weather_mcp_repository_url)
+echo "> Creating $WEATHER_MCP_HELM_VALUES_DST_FILE_NAME"
+echo "ECR_REPO_WEATHER_MCP_URI=$ECR_REPO_WEATHER_MCP_URI"
+cat <<EOF > $WEATHER_MCP_HELM_VALUES_DST_FILE_NAME
+image:
+  repository: $ECR_REPO_WEATHER_MCP_URI
 
-WEATHER_HELM_VALUES_DST_FILE_NAME=${WEATHER_HELM_VALUES_DST_FILE_NAME:-../weather/helm/agent-values.yaml}
+EOF
+
+WEATHER_AGENT_HELM_VALUES_DST_FILE_NAME=${WEATHER_AGENT_HELM_VALUES_DST_FILE_NAME:-../weather/helm/workshop-values.yaml}
 ECR_REPO_WEATHER_AGENT_URI=$(terraform output -json ecr_weather_agent_repository_url)
-echo "> Creating $WEATHER_HELM_VALUES_DST_FILE_NAME"
+echo "> Creating $WEATHER_AGENT_HELM_VALUES_DST_FILE_NAME"
 echo "ECR_REPO_WEATHER_AGENT_URI=$ECR_REPO_WEATHER_AGENT_URI"
-cat <<EOF > $WEATHER_HELM_VALUES_DST_FILE_NAME
+cat <<EOF > $WEATHER_AGENT_HELM_VALUES_DST_FILE_NAME
 image:
   repository: $ECR_REPO_WEATHER_AGENT_URI
 env:
@@ -36,7 +45,7 @@ mcp:
     {
       "mcpServers": {
         "weather-mcp-http": {
-          "url": "http://weather-mcp:8080/mcp/"
+          "url": "http://weather-mcp.mcp-servers:8080/mcp"
         }
       }
     }

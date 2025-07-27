@@ -9,7 +9,7 @@ docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_MCP_URI}:latest mcp-se
 docker push ${ECR_REPO_WEATHER_MCP_URI}:latest
 
 # Build and push Agent Service
-docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_AGENT_URI}:latest --build-arg RUNTAG=latest-dev  .
+docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_AGENT_URI}:latest .
 docker push ${ECR_REPO_WEATHER_AGENT_URI}:latest
 
 # Build and push Agent UI
