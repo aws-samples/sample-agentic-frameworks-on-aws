@@ -149,7 +149,7 @@ cd ../terraform
 terraform init
 terraform apply
 ./prep-env-weather-agent.sh
-./prep-env-weather-web.sh
+./prep-env-weather-ui.sh
 cd -
 ```
 
@@ -197,7 +197,7 @@ helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/h
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
   --create-namespace \
-  -f mcp-servers/weather-mcp-server/helm/workshop-values.yaml
+  -f mcp-servers/weather-mcp-server/helm/workshop-mcp-weather-values.yaml
 
 # Wait for MCP server to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_MCP_NAME} \
@@ -211,7 +211,7 @@ helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
   --install \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
   --create-namespace \
-  -f helm/workshop-values.yaml
+  -f helm/workshop-agent-weather-values.yaml
 
 # Wait for Agent to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
@@ -233,7 +233,7 @@ helm upgrade ${KUBERNETES_APP_AGENT_UI_NAME} web/helm \
   --install \
   --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
   --create-namespace \
-  -f web/helm/workshop-values.yaml
+  -f web/helm/workshop-ui-values.yaml
 
 
 # Wait for Agent UI to be ready
