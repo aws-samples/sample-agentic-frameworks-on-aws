@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "weather-mcp-stdio": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        ".",
+        "--directory",
+        "mcp-servers/weather-mcp-server",
+        "mcp-server",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}

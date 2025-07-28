@@ -4,7 +4,7 @@ mcp:
     {
       "mcpServers": {
         "weather-mcp-http": {
-          "url": "http://weather-mcp:8080/mcp"
+          "url": "http://weather-mcp.mcp-servers:8080/mcp"
         }
       }
     }

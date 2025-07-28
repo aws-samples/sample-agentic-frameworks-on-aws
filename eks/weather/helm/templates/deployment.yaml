@@ -84,7 +84,7 @@ spec:
               subPath: mcp.json
               readOnly: true
             {{- end }}
-            {{- if .Values.agent }}
+            {{- if (index .Values.agent "agent.md") }}
             - name: agent-config
               mountPath: /app/agent.md
               subPath: agent.md
@@ -99,7 +99,7 @@ spec:
           configMap:
             name: {{ include "agent.fullname" . }}-mcp-config
         {{- end }}
-        {{- if .Values.agent }}
+        {{- if (index .Values.agent "agent.md") }}
         - name: agent-config
           configMap:
             name: {{ include "agent.fullname" . }}-config

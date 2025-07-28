@@ -4,7 +4,7 @@ A generic AI agent framework built with Strands Agents, MCP (Model Context Proto
 
 ## Example
 
-Deploy a complete AI agent system with Web UI, Agent Service, and MCP Server to Amazon EKS in just a few steps.
+Deploy a complete AI agent system with Agent UI, Agent Service, and MCP Server to Amazon EKS in just a few steps.
 
 ### Prerequisites
 
@@ -32,15 +32,15 @@ graph TB
         end
 
         subgraph "Amazon EKS Cluster"
-            subgraph "Web UI Pod"
-                UI_POD[Weather UI<br/>FastAPI:8000<br/>OAuth Auth]
+            subgraph "agent-ui namespace"
+                UI_POD[Agent UI<br/>FastAPI:8000<br/>OAuth Auth]
             end
 
-            subgraph "Agent Pod"
+            subgraph "weather-agent namespace"
                 AGENT_POD[Weather Agent<br/>MCP:8080 A2A:9000 REST:3000]
             end
 
-            subgraph "MCP Server Pod"
+            subgraph "mcp-servers namespace"
                 MCP_POD[Weather MCP Server<br/>HTTP:8080<br/>Tools: forecast, alert]
             end
         end
@@ -57,7 +57,7 @@ graph TB
     UI_POD -->|REST API :3000| AGENT_POD
     AGENT_POD -->|MCP HTTP :8080| MCP_POD
     AGENT_POD -->|Invoke LLM| BEDROCK
-    USER -->|Authenticated Web UI| UI_POD
+    USER -->|Authenticated Agent UI| UI_POD
 
     classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:#fff
     classDef k8s fill:#326CE5,stroke:#fff,stroke-width:2px,color:#fff
@@ -69,11 +69,10 @@ graph TB
 ```
 
 **Key Components:**
-- **Web UI**: FastAPI-based frontend with OAuth authentication (port 8000)
+- **Agent UI**: FastAPI-based frontend with OAuth authentication (port 8000)
 - **Agent Service**: Triple protocol support - MCP (8080), A2A (9000), REST API (3000)
 - **MCP Server**: Dedicated weather tools server providing forecast/alert capabilities (port 8080)
-- **Multi-Architecture**: AMD64 support for all three services
-- **Security**: EKS Pod Identity for Bedrock access, OAuth JWT validation
+- **Security**: EKS Pod Identity for Bedrock access, OAuth JWT validation for user authentication
 
 
 ## Agent Code
@@ -99,6 +98,7 @@ This is how an Agent gets created:
 
 ## Deployment Steps
 
+
 ### 1. Environment Setup
 
 Set up the required environment variables:
@@ -112,24 +112,27 @@ export AWS_REGION=us-west-2
 export CLUSTER_NAME=agentic-ai-on-eks
 
 # Kubernetes Configuration
-export KUBERNETES_APP_WEATHER_MCP_NAMESPACE=weather-agent
+export KUBERNETES_APP_WEATHER_MCP_NAMESPACE=mcp-servers
 export KUBERNETES_APP_WEATHER_MCP_NAME=weather-mcp
 
 export KUBERNETES_APP_WEATHER_AGENT_NAMESPACE=weather-agent
 export KUBERNETES_APP_WEATHER_AGENT_NAME=weather-agent
 
-export KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE=agent-ui
-export KUBERNETES_APP_WEATHER_AGENT_UI_NAME=agent-ui
-export KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME=agent-ui
+export KUBERNETES_APP_AGENT_UI_NAMESPACE=agent-ui
+export KUBERNETES_APP_AGENT_UI_NAME=agent-ui
+export KUBERNETES_APP_AGENT_UI_SECRET_NAME=agent-ui
 
 # ECR Configuration
 export ECR_REPO_HOST=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-export ECR_REPO_MCP_NAME=agents-on-eks/weather-mcp
-export ECR_REPO_WEATHER_MCP_URI=${ECR_REPO_HOST}/${ECR_REPO_MCP_NAME}
-export ECR_REPO_NAME=agents-on-eks/weather-agent
-export ECR_REPO_WEATHER_AGENT_URI=${ECR_REPO_HOST}/${ECR_REPO_NAME}
-export ECR_REPO_UI_NAME=agents-on-eks/weather-agent-ui
-export ECR_REPO_WEATHER_AGENT_UI_URI=${ECR_REPO_HOST}/${ECR_REPO_UI_NAME}
+
+export ECR_REPO_WEATHER_MCP_NAME=agents-on-eks/weather-mcp
+export ECR_REPO_WEATHER_MCP_URI=${ECR_REPO_HOST}/${ECR_REPO_WEATHER_MCP_NAME}
+
+export ECR_REPO_WEATHER_AGENT_NAME=agents-on-eks/weather-agent
+export ECR_REPO_WEATHER_AGENT_URI=${ECR_REPO_HOST}/${ECR_REPO_WEATHER_AGENT_NAME}
+
+export ECR_REPO_AGENT_UI_NAME=agents-on-eks/agent-ui
+export ECR_REPO_AGENT_UI_URI=${ECR_REPO_HOST}/${ECR_REPO_AGENT_UI_NAME}
 
 # Amazon Bedrock Configuration
 export BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20250219-v1:0
@@ -143,9 +146,10 @@ Deploy the infrastructure using Terraform:
 
 ```bash
 cd ../terraform
+terraform init
 terraform apply
 ./prep-env-weather-agent.sh
-./prep-env-weather-web.sh
+./prep-env-weather-ui.sh
 cd -
 ```
 
@@ -165,139 +169,134 @@ Build and push all three images:
 
 ```bash
 # Build and push MCP Server
-docker build --platform linux/amd64 \
-  -t ${ECR_REPO_WEATHER_MCP_URI}:latest \
-  mcp-servers/weather-mcp-server
+docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_MCP_URI}:latest mcp-servers/weather-mcp-server
 docker push ${ECR_REPO_WEATHER_MCP_URI}:latest
 
 # Build and push Agent Service
-docker build --platform linux/amd64 \
-  -t ${ECR_REPO_WEATHER_AGENT_URI}:latest \
-  .
+docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_AGENT_URI}:latest .
 docker push ${ECR_REPO_WEATHER_AGENT_URI}:latest
 
-# Build and push Web UI
-docker build --platform linux/amd64 \
-  -t ${ECR_REPO_WEATHER_AGENT_UI_URI}:latest \
-  web
-docker push ${ECR_REPO_WEATHER_AGENT_UI_URI}:latest
+# Build and push Agent UI
+docker build --platform linux/amd64 -t ${ECR_REPO_AGENT_UI_URI}:latest web
+docker push ${ECR_REPO_AGENT_UI_URI}:latest
 ```
 
 Review the new images cluster in the console by visiting the [AWS ECR Console](https://console.aws.amazon.com/ecr/private-registry/repositories)
 
 ### 4. Deploy All Three Services
 
+Make sure you setup kubeconfig:
+```bash
+aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}
+```
+
 Deploy the MCP Server:
 ```bash
-helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_MCP_URI}
+# Deploy the MCP Server
+helm upgrade ${KUBERNETES_APP_WEATHER_MCP_NAME} mcp-servers/weather-mcp-server/helm \
+  --install \
+  --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
+  --create-namespace \
+  -f mcp-servers/weather-mcp-server/helm/workshop-mcp-weather-values.yaml
 
 # Wait for MCP server to be ready
-kubectl -n ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
-  rollout status deployment/${KUBERNETES_APP_WEATHER_MCP_NAME}
+kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_MCP_NAME} \
+  --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE}
 ```
 
 Deploy the Agent Service:
 ```bash
-# Load agent environment variables
-source .env
+# Deploy the Agent
+helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm \
+  --install \
+  --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
+  --create-namespace \
+  -f helm/workshop-agent-weather-values.yaml
 
-# Deploy the weather agent
-helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} --create-namespace \
-  --set image.repository=${ECR_REPO_WEATHER_AGENT_URI} \
-  --set env.OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
-  --set env.SESSION_STORE_BUCKET_NAME=${SESSION_STORE_BUCKET_NAME} \
-  -f helm/mcp-remote.yaml
-
-# Wait for agent to be ready
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
-  rollout status deployment/${KUBERNETES_APP_WEATHER_AGENT_NAME}
+# Wait for Agent to be ready
+kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
+  --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
 ```
 
-Deploy the Web UI:
+Deploy the Agent UI:
 ```bash
-# Load UI environment variables
-source web/.env
+# Create OAuth secret for the Agent UI
+kubectl create ns ${KUBERNETES_APP_AGENT_UI_NAMESPACE} 2>/dev/null || true
+kubectl delete secret ${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} 2>/dev/null || true
+kubectl create secret generic ${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
+  --from-env-file web/.env
 
-# Create OAuth secret
-kubectl create secret generic ${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
-  --from-literal=OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID} \
-  --from-literal=OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} \
-  --from-literal=OAUTH_LOGOUT_URL=${OAUTH_LOGOUT_URL} \
-  --from-literal=OAUTH_WELL_KNOWN_URL=${OAUTH_WELL_KNOWN_URL} \
-  --from-literal=OAUTH_JWKS_URL=${OAUTH_JWKS_URL} \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
+# Deploy the Agent UI
+helm upgrade ${KUBERNETES_APP_AGENT_UI_NAME} web/helm \
+  --install \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
+  --create-namespace \
+  -f web/helm/workshop-ui-values.yaml
 
-# Deploy the web UI
-helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} web/helm --install \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} --create-namespace \
-  --set secret.name=${KUBERNETES_APP_WEATHER_AGENT_UI_SECRET_NAME} \
-  --set image.repository=${ECR_REPO_WEATHER_AGENT_UI_URI} \
-  --set env.AGENT_UI_ENDPOINT_URL_1="http://${KUBERNETES_APP_WEATHER_AGENT_NAME}.${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}/prompt"
 
-# Wait for UI to be ready
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
-  rollout status deployment/${KUBERNETES_APP_WEATHER_AGENT_UI_NAME}
+# Wait for Agent UI to be ready
+kubectl rollout status deployment ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
 ```
 
 Review the 3 pods running (MCP, Agent, UI) or go to [AWS EKS Console Resource view](https://console.aws.amazon.com/eks/clusters/agentic-ai-on-eks?&selectedResourceId=pods&selectedTab=cluster-resources-tab)
 
 Or check in the terminal
 ```bash
-kubectl get pods -A
+kubectl get pods -n mcp-servers
+kubectl get pods -n weather-agent
+kubectl get pods -n agent-ui
+```
+Expected output should look like this, all pods in `Running` status:
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+weather-mcp-885867d86-w9986     1/1     Running   0          80s
+
+NAME                            READY   STATUS    RESTARTS   AGE
+weather-agent-97b7bfb55-7q8fs   1/1     Running   0          92s
+
+NAME                            READY   STATUS    RESTARTS   AGE
+agent-ui-6f4c6d889-r442z        1/1     Running   0          44s
 ```
 
 ### 5. Access the Weather Agent UI
 
-Port forward the Web UI and access it:
+Before runnign `kubectl port-forward` lets get some values
 
+If running this lab from a workshop environment get the Agent url with this command:
 ```bash
-kubectl --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
-  port-forward svc/${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} 8000:fastapi
+echo "$IDE_URL/proxy/8000/"
+```
+Or if running locally on your on your developer computer then use this url http://localhost:8000/chat/
+
+Print the username and password
+```bash
+echo "Username: Alice"
+echp "Password: Passw0rd@"
 ```
 
-Open http://localhost:8000/chat in your browser.
-
-Login with:
-- **Username**: `Alice`
-- **Password**: `Passw0rd@`
-
-Try asking: **"What's the weather like in San Francisco?"**
-
-Check the agent logs
+Run Kubectl Port forward the Agent UI and access it:
 ```bash
-kubectl logs -n {KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} deploy/${KUBERNETES_APP_WEATHER_AGENT_NAME} -f
+kubectl  port-forward svc/${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
+  8000:fastapi
 ```
 
-You can ask another question about weather forecast or alerts, without specifying the city, since the Agent remembers.
+Ask the agent the following question:
+```prompt
+What's the weather like in San Francisco?
+```
+
+Check the agent logs in different terminal
+```bash
+kubectl logs -n ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} deploy/${KUBERNETES_APP_WEATHER_AGENT_NAME} -f
+```
+
+Ask another question about alerts (a different tool), without specifying the city or state, the Agent remembers the state location from the first message.
 ```prompt
 Any weather alerts?
-```
-
-Check that all services are running:
-
-```bash
-# Check MCP Server
-kubectl -n ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE} \
-  get pods -l app.kubernetes.io/instance=${KUBERNETES_APP_WEATHER_MCP_NAME}
-
-# Check Agent Service
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE} \
-  get pods -l app.kubernetes.io/instance=${KUBERNETES_APP_WEATHER_AGENT_NAME}
-
-# Check Web UI
-kubectl -n ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE} \
-  get pods -l app.kubernetes.io/instance=${KUBERNETES_APP_WEATHER_AGENT_UI_NAME}
-```
-
-Expected output for each:
-```
-NAME                            READY   STATUS    RESTARTS   AGE
-weather-mcp-885867d86-qkcfs     1/1     Running   0          109m
-weather-agent-558b67c994-8h5ds  1/1     Running   0          22m
-agent-ui-569f749c7f-ld22k       1/1     Running   0          55m
 ```
 
 ## Agent Configuration
@@ -317,8 +316,8 @@ When you're done, clean up to avoid charges:
 
 ```bash
 # Uninstall applications
-helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_UI_NAME} \
-  --namespace ${KUBERNETES_APP_WEATHER_AGENT_UI_NAMESPACE}
+helm uninstall ${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE}
 helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
 helm uninstall ${KUBERNETES_APP_WEATHER_MCP_NAME} \

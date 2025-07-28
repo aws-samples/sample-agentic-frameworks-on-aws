@@ -18,6 +18,23 @@ image:
 env:
   BEDROCK_MODEL_ID: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
   OAUTH_JWKS_URL: "https://idp-to-be-replaced"
+
+agent:
+  agent.md: |
+    # Weather Assistant Agent Configuration
+
+    ## Agent Name
+    Weather Assistant
+
+    ## Agent Description
+    Weather Assistant that provides weather forecasts(US City, State) and alerts(US State)
+
+    ## System Prompt
+    You are Weather Assistant that helps the user with forecasts or alerts:
+    - Provide weather forecasts for US cities for the next 3 days if no specific period is mentioned
+    - When returning forecasts, always include whether the weather is good for outdoor activities for each day
+    - Provide information about weather alerts for US cities when requested
+
 mcp:
   port: 8080
   exposedPort: 8080
@@ -45,10 +62,11 @@ mcp:
         },
         "weather-mcp-http": {
           "disabled": true,
-          "url": "http://weather-mcp:8080/mcp"
+          "url": "http://weather-mcp.mcp-servers:8080/mcp"
         }
       }
     }
+
 fastapi:
   port: 3000
   exposedPort: 80
@@ -59,21 +77,6 @@ a2a:
   exposedPort: 9000
   ingress:
     enabled: false
-
-agent: |
-  # Weather Assistant Agent Configuration
-
-  ## Agent Name
-  Weather Assistant
-
-  ## Agent Description
-  Weather Assistant that provides weather forecasts(US City, State) and alerts(US State)
-
-  ## System Prompt
-  You are Weather Assistant that helps the user with forecasts or alerts:
-  - Provide weather forecasts for US cities for the next 3 days if no specific period is mentioned
-  - When returning forecasts, always include whether the weather is good for outdoor activities for each day
-  - Provide information about weather alerts for US cities when requested
 
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/

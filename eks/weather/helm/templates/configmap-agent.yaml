@@ -1,4 +1,4 @@
-{{- if .Values.agent }}
+{{- if (index .Values.agent "agent.md") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,5 +6,5 @@ metadata:
   labels:
     {{- include "agent.labels" . | nindent 4 }}
 data:
-  agent.md: {{ .Values.agent | quote }}
+  agent.md: {{ index .Values.agent "agent.md" | quote }}
 {{- end }}
