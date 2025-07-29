@@ -1,5 +1,0 @@
-image:
-  repository: "015299085168.dkr.ecr.us-west-2.amazonaws.com/agents-on-eks/agent-ui"
-env:
-  BASE_PATH: "/proxy/8000"
-  BASE_URL: "https://d26mgp8r3zq8b9.cloudfront.net"
