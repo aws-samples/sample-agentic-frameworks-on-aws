@@ -1,4 +1,3 @@
-{{- $ings := .Values.ingresses | default (list) -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,20 +5,19 @@ metadata:
   labels:
     {{- include "agent.labels" . | nindent 4 }}
 spec:
-  type: {{ default "ClusterIP" .Values.service.type }}
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.mcp.exposedPort }}
+      targetPort: mcp
+      protocol: TCP
+      name: mcp
+    - port: {{ .Values.a2a.exposedPort }}
+      targetPort: a2a
+      protocol: TCP
+      name: a2a
+    - port: {{ .Values.fastapi.exposedPort }}
+      targetPort: fastapi
+      protocol: TCP
+      name: fastapi
   selector:
     {{- include "agent.selectorLabels" . | nindent 4 }}
-  ports:
-    {{- if eq (len $ings) 0 }}
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP
-    {{- else }}
-    {{- range $i, $ing := $ings }}
-    - name: {{ if and $ing.service $ing.service.port (hasKey $ing.service.port "name") }}{{ $ing.service.port.name }}{{ else }}{{ printf "port-%d" $i }}{{ end }}
-      port: {{ if and $ing.service $ing.service.port (hasKey $ing.service.port "number") }}{{ $ing.service.port.number }}{{ else }}{{ add 8000 $i }}{{ end }}
-      targetPort: {{ if and $ing.service $ing.service.port (hasKey $ing.service.port "name") }}{{ $ing.service.port.name }}{{ else }}{{ printf "port-%d" $i }}{{ end }}
-      protocol: TCP
-    {{- end }}
-    {{- end }}

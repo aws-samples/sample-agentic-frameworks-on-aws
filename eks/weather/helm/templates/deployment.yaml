@@ -42,23 +42,29 @@ spec:
           {{- if .Values.image.pullPolicy }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- end }}
-
           env:
+            - name: MCP_PORT
+              value: "{{ .Values.mcp.port }}"
+            - name: A2A_PORT
+              value: "{{ .Values.a2a.port }}"
+            - name: FASTAPI_PORT
+              value: "{{ .Values.fastapi.port }}"
             {{- if .Values.env }}
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: "{{ $value }}"
             {{- end }}
             {{- end }}
-
           ports:
-            {{- $ings := .Values.ingresses | default (list) }}
-            {{- range $i, $ing := $ings }}
-            - name: {{ if and $ing.service $ing.service.port (hasKey $ing.service.port "name") }}{{ $ing.service.port.name }}{{ else }}{{ printf "port-%d" $i }}{{ end }}
-              containerPort: {{ if and $ing.service $ing.service.port (hasKey $ing.service.port "number") }}{{ $ing.service.port.number }}{{ else }}{{ add 30000 $i }}{{ end }}
+            - name: mcp
+              containerPort: {{ .Values.mcp.port }}
               protocol: TCP
-            {{- end }}
-
+            - name: a2a
+              containerPort: {{ .Values.a2a.port }}
+              protocol: TCP
+            - name: fastapi
+              containerPort: {{ .Values.fastapi.port }}
+              protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -71,7 +77,6 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-
           volumeMounts:
             {{- if (index .Values.mcp "mcp.json") }}
             - name: mcp-config
@@ -102,7 +107,6 @@ spec:
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
