@@ -8,23 +8,25 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-TERRAFORM_DIRECTORY="terraform"
+TERRAFORM_DIRECTORY="${ROOTDIR}/terraform"
 
-MCP_HELM_CHART="${ROOTDIR}/weather/mcp-servers/weather-mcp-server/helm"
+# cant get environment variables from env.sh because creates circular dependency
+MCP_HELM_CHART="${ROOTDIR}/manifests/helm/mcp"
 WEATHER_MCP_VALUES="${MCP_HELM_CHART}/workshop-mcp-weather-values.yaml"
 
-AGENT_HELM_CHART="${ROOTDIR}/weather/helm"
+AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/agent"
 WEATHER_AGENT_HELM_VALUES="${AGENT_HELM_CHART}/workshop-agent-weather-values.yaml"
 
-WEATHER_AGENT_DST_FILE_NAME="${ROOTDIR}/weather/.env"
+SINGLE_AGENT_DIRECTORY="${ROOTDIR}/weather"
+WEATHER_AGENT_DST_FILE_NAME="${SINGLE_AGENT_DIRECTORY}/.env"
 
 
 
-TERRAFORM_OUTPUTS_MAP=$(terraform -chdir=$ROOTDIR/$TERRAFORM_DIRECTORY output --json outputs_map)
+TERRAFORM_OUTPUTS_MAP=$(terraform -chdir=$TERRAFORM_DIRECTORY output --json outputs_map)
 
 OAUTH_JWKS_URL=$(echo "$TERRAFORM_OUTPUTS_MAP" | jq -r ".cognito_jwks_url")
-BEDROCK_MODEL_ID=$(terraform -chdir=$ROOTDIR/$TERRAFORM_DIRECTORY output -json bedrock_model_id)
-SESSION_STORE_BUCKET_NAME=$(terraform -chdir=$ROOTDIR/$TERRAFORM_DIRECTORY output -json weather_agent_session_store_bucket_name)
+BEDROCK_MODEL_ID=$(terraform -chdir=$TERRAFORM_DIRECTORY output -json bedrock_model_id)
+SESSION_STORE_BUCKET_NAME=$(terraform -chdir=$TERRAFORM_DIRECTORY output -json weather_agent_session_store_bucket_name)
 
 echo "" > $WEATHER_AGENT_DST_FILE_NAME
 echo "OAUTH_JWKS_URL=\"$OAUTH_JWKS_URL\"" >> $WEATHER_AGENT_DST_FILE_NAME
@@ -33,7 +35,7 @@ echo "SESSION_STORE_BUCKET_NAME=$SESSION_STORE_BUCKET_NAME" >> $WEATHER_AGENT_DS
 
 
 
-ECR_REPO_WEATHER_MCP_URI=$(terraform -chdir=$ROOTDIR/$TERRAFORM_DIRECTORY output -json ecr_weather_mcp_repository_url)
+ECR_REPO_WEATHER_MCP_URI=$(terraform -chdir=$TERRAFORM_DIRECTORY output -json ecr_weather_mcp_repository_url)
 
 cat <<EOF > $WEATHER_MCP_VALUES
 image:
@@ -42,7 +44,7 @@ image:
 EOF
 
 
-ECR_REPO_WEATHER_AGENT_URI=$(terraform -chdir=$ROOTDIR/$TERRAFORM_DIRECTORY output -json ecr_weather_agent_repository_url)
+ECR_REPO_WEATHER_AGENT_URI=$(terraform -chdir=$TERRAFORM_DIRECTORY output -json ecr_weather_agent_repository_url)
 
 cat <<EOF > $WEATHER_AGENT_HELM_VALUES
 agent:

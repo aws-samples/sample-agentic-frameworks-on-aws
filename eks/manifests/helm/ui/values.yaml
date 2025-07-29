@@ -30,8 +30,8 @@ secret:
 # These values are used as defaults and can be overridden during helm install/upgrade
 # Note: Individual env vars take precedence over secret values when both are defined
 env:
-  AGENT_UI_ENDPOINT_URL_1: "http://weather-agent.weather-agent/prompt"
-  AGENT_UI_ENDPOINT_URL_2: "http://travel-agent.travel-agent/prompt"
+  AGENT_UI_ENDPOINT_URL_1: "http://weather-agent.agents/prompt"
+  AGENT_UI_ENDPOINT_URL_2: "http://travel-agent.agents/prompt"
 
 fastapi:
   port: 8000

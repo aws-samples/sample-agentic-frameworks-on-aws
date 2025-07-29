@@ -19,7 +19,7 @@ variable "tags" {
 variable "weather_namespace" {
   description = "Kubernetes namespace"
   type        = string
-  default     = "weather-agent"
+  default     = "agents"
 }
 
 variable "weather_service_account" {

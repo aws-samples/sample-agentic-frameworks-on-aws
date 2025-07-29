@@ -7,3 +7,6 @@ __pycache__
 shell
 *.log
 .venv
+
+# ignore dynamic helm values created out of terraform outputs
+*-values.yaml

@@ -2,16 +2,16 @@
 set -euo pipefail
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOTDIR="$(cd ${SCRIPTDIR}/../..; pwd )"
+ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && set -x
 [[ -n "${DEBUG:-}" ]] && echo "executing ${BASH_SOURCE[0]} from ${BASH_SOURCE[0]}"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
 # Not need it when running in workshop
-#source ./scripts/infra.sh
-#source ./scripts/env.sh
-#source ./scripts/containers.sh
+#$SCRIPTDIR/infra.sh
+#source $SCRIPTDIR/env.sh
+#$SCRIPTDIR/containers.sh
 
-source ./scripts/kubernetes.sh
-source ./scripts/ui.sh
+$SCRIPTDIR/kubernetes.sh
+$SCRIPTDIR/ui.sh

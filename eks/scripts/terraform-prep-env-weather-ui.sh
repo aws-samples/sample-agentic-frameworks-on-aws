@@ -8,17 +8,19 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-TERRAFORM_DIRECTORY="terraform"
+TERRAFORM_DIRECTORY="${ROOTDIR}/terraform"
 
-UI_AGENT_HELM_CHART="${ROOTDIR}/weather/web/helm"
+# cant get environment variables from env.sh because creates circular dependency
+UI_AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/ui"
 UI_AGENT_HELM_VALUES="${UI_AGENT_HELM_CHART}/workshop-ui-values.yaml"
 
-UI_AGENT_DST_FILE_NAME="${ROOTDIR}/weather/web/.env"
+UI_AGENT_DIRECTORY="${ROOTDIR}/ui"
+UI_AGENT_DST_FILE_NAME="${UI_AGENT_DIRECTORY}/.env"
 
 
 
 
-TERRAFORM_OUTPUTS_MAP=$(terraform -chdir="$ROOTDIR/$TERRAFORM_DIRECTORY" output --json outputs_map)
+TERRAFORM_OUTPUTS_MAP=$(terraform -chdir="$TERRAFORM_DIRECTORY" output --json outputs_map)
 
 OAUTH_USER_POOL_ID=$(echo "$TERRAFORM_OUTPUTS_MAP" | jq -r ".cognito_userpool_id")
 OAUTH_CLIENT_ID=$(echo "$TERRAFORM_OUTPUTS_MAP" | jq -r ".cognito_client_id")
@@ -40,12 +42,15 @@ echo "OAUTH_JWKS_URL=$OAUTH_JWKS_URL" >> $UI_AGENT_DST_FILE_NAME
 
 
 
-ECR_REPO_AGENT_UI_URI=$(terraform -chdir="$ROOTDIR/$TERRAFORM_DIRECTORY" output -json ecr_agent_ui_repository_url)
+ECR_REPO_AGENT_UI_URI=$(terraform -chdir="$TERRAFORM_DIRECTORY" output -json ecr_agent_ui_repository_url)
 
 cat <<EOF > $UI_AGENT_HELM_VALUES
 image:
   repository: $ECR_REPO_AGENT_UI_URI
 env:
+env:
+  AGENT_UI_ENDPOINT_URL_1: "http://weather-agent.agents/prompt"
+  AGENT_UI_ENDPOINT_URL_2: "http://travel-agent.agents/prompt"
   BASE_PATH: "${IDE_URL:+/proxy/8000}"
   BASE_URL: "${IDE_URL:-http://localhost:8000}"
 EOF
