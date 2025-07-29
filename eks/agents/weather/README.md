@@ -308,6 +308,16 @@ agent-ui-6f4c6d889-r442z        1/1     Running   0          44s
 
 ### 5. Access the Weather Agent UI
 
+The included UI provides:
+- OAuth authentication via Amazon Cognito
+- Multi-agent chat interface
+- Session management
+- Responsive design for mobile and desktop
+
+Access the UI after deployment at the configured endpoint with default credentials:
+- Username: `Alice`
+- Password: `Passw0rd@`
+
 Before runnign `kubectl port-forward` lets get some values
 
 If running this lab from a workshop environment get the Agent url and open with this command:
@@ -318,12 +328,6 @@ If you not in workshop studio and instead running locally on your on your develo
 ```bash
 python3 -m webbrowser "http://localhost:8000/chat/"
 ``` 
-
-Print the username and password
-```bash
-echo "Username: Alice"
-echp "Password: Passw0rd@"
-```
 
 Run Kubectl Port forward the Agent UI and access it:
 ```bash
