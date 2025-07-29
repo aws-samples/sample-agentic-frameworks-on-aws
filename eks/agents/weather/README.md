@@ -318,7 +318,14 @@ Access the UI after deployment at the configured endpoint with default credentia
 - Username: `Alice`
 - Password: `Passw0rd@`
 
-Before runnign `kubectl port-forward` lets get some values
+Run Kubectl Port forward the Agent UI and access it:
+```bash
+kubectl  port-forward svc/${KUBERNETES_APP_AGENT_UI_NAME} \
+  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
+  8000:fastapi
+```
+
+From another terminal open the Browser with the corresponding URL
 
 If running this lab from a workshop environment get the Agent url and open with this command:
 ```bash
@@ -327,24 +334,23 @@ python3 -m webbrowser "$IDE_URL/proxy/8000/"
 If you not in workshop studio and instead running locally on your on your developer computer then use localhost
 ```bash
 python3 -m webbrowser "http://localhost:8000/chat/"
-``` 
-
-Run Kubectl Port forward the Agent UI and access it:
-```bash
-kubectl  port-forward svc/${KUBERNETES_APP_AGENT_UI_NAME} \
-  --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
-  8000:fastapi
 ```
+
 
 Say hello to the weather to see what how the Agent can help you, hit enter to send the prompt to the Agent.
 ```bash
 Hello
 ```
 
+![weather agent ui hello](../../images/agents-ui-weather-hello.png)
+
 Ask the agent the following question:
 ```prompt
 What's the weather like in San Francisco?
 ```
+
+![weather agent ui forecast](../../images/agents-ui-weather-forecast.png)
+
 
 Check the agent logs in different terminal
 ```bash
@@ -355,6 +361,9 @@ Ask another question about alerts (a different tool), without specifying the cit
 ```prompt
 Any weather alerts for this state?
 ```
+
+![weather agent ui alerts](../../images/agents-ui-weather-alerts.png)
+
 
 ## Agent Configuration
 
