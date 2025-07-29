@@ -1,6 +1,46 @@
-# AI Agents on EKS
+# Weather Agent Overview
+
+This implementation provides a weather-focused AI agent that processes natural language requests for weather information and alerts.
 
 A generic AI agent framework built with Strands Agents, MCP (Model Context Protocol), A2A (Agent to Agent), and FastAPI. Configurable for any domain including weather forecasts, financial analysis, customer service, and more.
+
+### Agent Capabilities
+- Current weather conditions
+- Weather forecasts
+- Weather alerts
+- Temperature information
+- Weather-related recommendations
+
+### Example Interactions
+
+Input Prompt:
+```
+What's the weather like in San Francisco?
+```
+
+Expected Response Format:
+```
+As the Weather Agent, I've checked the current conditions for San Francisco:
+
+Current Weather:
+- Temperature: 62°F
+- Conditions: Partly Cloudy
+- Humidity: 75%
+- Wind: 12 mph from the West
+
+Today's Forecast:
+- High: 68°F
+- Low: 54°F
+- Conditions: Morning fog clearing to partly cloudy
+- Precipitation Chance: 10%
+
+Notable Conditions:
+- Morning fog expected until 11 AM
+- Clear conditions in the afternoon
+- Light breeze throughout the day
+```
+
+
 
 ## Example
 
