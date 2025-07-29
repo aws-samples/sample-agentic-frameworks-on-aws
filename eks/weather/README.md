@@ -36,7 +36,7 @@ graph TB
                 UI_POD[Agent UI<br/>FastAPI:8000<br/>OAuth Auth]
             end
 
-            subgraph "weather-agent namespace"
+            subgraph "agents namespace"
                 AGENT_POD[Weather Agent<br/>MCP:8080 A2A:9000 REST:3000]
             end
 
@@ -115,10 +115,10 @@ export CLUSTER_NAME=agentic-ai-on-eks
 export KUBERNETES_APP_WEATHER_MCP_NAMESPACE=mcp-servers
 export KUBERNETES_APP_WEATHER_MCP_NAME=weather-mcp
 
-export KUBERNETES_APP_WEATHER_AGENT_NAMESPACE=weather-agent
+export KUBERNETES_APP_WEATHER_AGENT_NAMESPACE=agents
 export KUBERNETES_APP_WEATHER_AGENT_NAME=weather-agent
 
-export KUBERNETES_APP_AGENT_UI_NAMESPACE=agent-ui
+export KUBERNETES_APP_AGENT_UI_NAMESPACE=ui
 export KUBERNETES_APP_AGENT_UI_NAME=agent-ui
 export KUBERNETES_APP_AGENT_UI_SECRET_NAME=agent-ui
 
@@ -177,7 +177,7 @@ docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_AGENT_URI}:latest .
 docker push ${ECR_REPO_WEATHER_AGENT_URI}:latest
 
 # Build and push Agent UI
-docker build --platform linux/amd64 -t ${ECR_REPO_AGENT_UI_URI}:latest web
+docker build --platform linux/amd64 -t ${ECR_REPO_AGENT_UI_URI}:latest ../ui
 docker push ${ECR_REPO_AGENT_UI_URI}:latest
 ```
 
