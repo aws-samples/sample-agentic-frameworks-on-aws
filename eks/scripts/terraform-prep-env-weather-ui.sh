@@ -8,7 +8,7 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-TERRAFORM_DIRECTORY="${ROOTDIR}/terraform"
+TERRAFORM_DIRECTORY="${ROOTDIR}/infrastructure/terraform"
 
 # cant get environment variables from env.sh because creates circular dependency
 UI_AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/ui"

@@ -47,18 +47,27 @@ export ECR_REPO_AGENT_UI_URI=${ECR_REPO_HOST}/${ECR_REPO_AGENT_UI_NAME}
 # Amazon Bedrock Configuration
 export BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20250219-v1:0
 
-# Agents
+
+# Helm Charts
 export MCP_HELM_CHART="${ROOTDIR}/manifests/helm/mcp"
-export WEATHER_MCP_VALUES="${MCP_HELM_CHART}/workshop-mcp-weather-values.yaml"
-
-export SINGLE_AGENT_DIRECTORY="${ROOTDIR}/weather"
-
 export AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/agent"
+export UI_AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/ui"
+
+# UI
+export UI_AGENT_DIRECTORY="${ROOTDIR}/ui"
+export UI_AGENT_HELM_VALUES="${UI_AGENT_HELM_CHART}/workshop-ui-values.yaml"
+
+# Agents
+export WEATHER_AGENT_DIRECTORY="${ROOTDIR}/agents/weather"
 export WEATHER_AGENT_HELM_VALUES="${AGENT_HELM_CHART}/workshop-agent-weather-values.yaml"
 
-export UI_AGENT_DIRECTORY="${ROOTDIR}/ui"
-export UI_AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/ui"
-export UI_AGENT_HELM_VALUES="${UI_AGENT_HELM_CHART}/workshop-ui-values.yaml"
+# MCP Servers
+# TODO: move all mcp servers to the root under ${ROOTDIR}/mcp-servers
+export WEATHER_MCP_DIRECTORY="${ROOTDIR}/agents/weather/mcp-servers/weather-mcp-server"
+export WEATHER_MCP_VALUES="${MCP_HELM_CHART}/workshop-mcp-weather-values.yaml"
+
+
+
 
 
 

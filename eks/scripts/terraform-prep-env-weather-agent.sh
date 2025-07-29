@@ -8,7 +8,7 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-TERRAFORM_DIRECTORY="${ROOTDIR}/terraform"
+TERRAFORM_DIRECTORY="${ROOTDIR}/infrastructure/terraform"
 
 # cant get environment variables from env.sh because creates circular dependency
 MCP_HELM_CHART="${ROOTDIR}/manifests/helm/mcp"
@@ -17,8 +17,8 @@ WEATHER_MCP_VALUES="${MCP_HELM_CHART}/workshop-mcp-weather-values.yaml"
 AGENT_HELM_CHART="${ROOTDIR}/manifests/helm/agent"
 WEATHER_AGENT_HELM_VALUES="${AGENT_HELM_CHART}/workshop-agent-weather-values.yaml"
 
-SINGLE_AGENT_DIRECTORY="${ROOTDIR}/weather"
-WEATHER_AGENT_DST_FILE_NAME="${SINGLE_AGENT_DIRECTORY}/.env"
+WEATHER_AGENT_DIRECTORY="${ROOTDIR}/agents/weather"
+WEATHER_AGENT_DST_FILE_NAME="${WEATHER_AGENT_DIRECTORY}/.env"
 
 
 

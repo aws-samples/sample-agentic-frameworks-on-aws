@@ -8,4 +8,4 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-terraform -chdir="$ROOTDIR/terraform" apply --auto-approve
+terraform -chdir="$ROOTDIR/infrastructure/terraform" apply --auto-approve

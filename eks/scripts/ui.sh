@@ -8,7 +8,9 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
-echo "Login with username: Alice and password: Passw0rd@"
+echo "Login in the UI with:"
+echo "username: Alice"
+echo "password: Passw0rd@"
 
 kubectl  port-forward svc/${KUBERNETES_APP_AGENT_UI_NAME} \
   --namespace ${KUBERNETES_APP_AGENT_UI_NAMESPACE} \
