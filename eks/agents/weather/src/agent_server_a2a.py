@@ -51,12 +51,17 @@ def a2a_agent():
         strands_agent = create_agent(conversation_manager=MemoryLostConversationManager())
         logger.info("Agent instance created successfully")
 
+        port = os.getenv("A2A_PORT", "9000")
+        hosting_http_url = os.getenv("A2A_URL", "0.0.0.0")
+
+
         strands_a2a_agent = A2AServer(
-            agent=strands_agent
+            agent=strands_agent,
+            port=int(port),
+            http_url=hosting_http_url
         )
         logger.info("A2A Server wrapper created successfully")
 
-        port = os.getenv("A2A_PORT", "9000")
         logger.info(f"Starting A2A server on port {port}")
 
         strands_a2a_agent.serve()

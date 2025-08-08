@@ -18,6 +18,10 @@ kubectl delete secret ${KUBERNETES_APP_AGENT_UI_NAME} \
 helm uninstall ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
 
+# Uninstall the Travel Agent from the cluster:
+helm uninstall ${KUBERNETES_APP_TRAVEL_AGENT_NAME} \
+  --namespace ${KUBERNETES_APP_TRAVEL_AGENT_NAMESPACE}
+
 # Uninstall the Weather MCP Server from the cluster:
 helm uninstall ${KUBERNETES_APP_WEATHER_MCP_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_MCP_NAMESPACE}
