@@ -30,6 +30,10 @@ output "configure_kubectl" {
   value       = "aws eks --region ${local.region} update-kubeconfig --name ${module.eks.cluster_name}"
 }
 
+################################################################################
+# Adot and Cert Manager Add-ons
+################################################################################
+
 module "eks_blueprints_addons" {
   source  = "aws-ia/eks-blueprints-addons/aws"
   version = "~> 1.16"
@@ -41,8 +45,9 @@ module "eks_blueprints_addons" {
 
   # EKS Add-on
   eks_addons = {
-    adot               = {}
-    aws-ebs-csi-driver = {}
+    adot                            = {}
+    aws-ebs-csi-driver              = {}
+    amazon-cloudwatch-observability = {}
   }
 
   # Add-ons
@@ -52,4 +57,33 @@ module "eks_blueprints_addons" {
   tags = local.tags
 
   depends_on = [module.eks]
+}
+
+################################################################################
+# Container Insights Pod Identity
+################################################################################
+
+module "container_insights_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "~> 1.0"
+
+  ## IAM role / policy
+  name            = "${local.name}-cloudwatch-agent"
+  use_name_prefix = false
+
+  ## Pod-identity association
+  associations = {
+    portfolio-manager = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "amazon-cloudwatch"
+      service_account = "cloudwatch-agent"
+    },
+  }
+
+  additional_policy_arns = {
+    CloudWatchAgentServerPolicy = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+    AWSXrayWriteOnlyAccess      = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+  }
+
+  tags = local.tags
 }
