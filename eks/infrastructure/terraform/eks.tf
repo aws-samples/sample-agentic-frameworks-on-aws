@@ -46,7 +46,6 @@ module "eks_blueprints_addons" {
   # EKS Add-on
   eks_addons = {
     adot                            = {}
-    aws-ebs-csi-driver              = {}
     amazon-cloudwatch-observability = {}
   }
 
