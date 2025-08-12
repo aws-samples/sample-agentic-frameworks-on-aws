@@ -1,7 +1,7 @@
 variable "name" {
   description = "EKS Cluster name"
   type        = string
-  default     = "agentic-ai-on-eks"
+  default     = "agentic-ai-on-eks-frameworks-ref-architecture"
 }
 
 variable "region" {

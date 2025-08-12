@@ -6,8 +6,14 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.31"
 
-  cluster_name    = local.name
+  cluster_name    = var.name
   cluster_version = "1.32"
+
+  iam_role_use_name_prefix = false
+  iam_role_name            = "${local.name}-eks-cluster-role"
+
+  node_iam_role_use_name_prefix = false
+  node_iam_role_name            = "${local.name}-eks-node-role"
 
   # Give the Terraform identity admin access to the cluster
   # which will allow it to deploy resources into the cluster
@@ -85,4 +91,93 @@ module "container_insights_pod_identity" {
   }
 
   tags = local.tags
+}
+
+################################################################################
+# Bedrock Model Invocation Logging Configuration
+################################################################################
+
+module "bedrock_logging_role" {
+  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+
+  create_role                     = true
+  create_custom_role_trust_policy = true
+  custom_role_trust_policy        = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "bedrock.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+        },
+        "ArnLike": {
+          "aws:SourceArn": "arn:aws:bedrock:${local.region}:${data.aws_caller_identity.current.account_id}:*"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+  role_name         = "${local.name}-bedrock-logging-role"
+  role_requires_mfa = false
+
+  custom_role_policy_arns = [
+    module.iam_policy.arn,
+  ]
+  number_of_custom_role_policy_arns = 1
+}
+
+
+module "iam_policy" {
+  source = "terraform-aws-modules/iam/aws//modules/iam-policy"
+
+  name        = "${local.name}-bedrock-logging-policy"
+  path        = "/"
+  description = "Policy for Bedrock model invocation logging"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+module "log_group" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
+  version = "~> 3.0"
+
+  name              = "/aws/bedrock/model-invocation"
+  retention_in_days = 120
+}
+
+resource "aws_bedrock_model_invocation_logging_configuration" "this" {
+
+  logging_config {
+    embedding_data_delivery_enabled = true
+    image_data_delivery_enabled     = true
+    text_data_delivery_enabled      = true
+    video_data_delivery_enabled     = true
+
+    cloudwatch_config {
+      log_group_name = "/aws/bedrock/model-invocation"
+      role_arn       = module.bedrock_logging_role.iam_role_arn
+    }
+  }
 }

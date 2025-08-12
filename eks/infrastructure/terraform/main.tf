@@ -35,9 +35,11 @@ data "aws_availability_zones" "available" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 locals {
-  name   = var.name != "" ? var.name : "eks-blueprints"
-  region = var.region != "" ? var.region : "us-west-2"
+  name   = "agentic-ai-on-eks"
+  region = var.region
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
