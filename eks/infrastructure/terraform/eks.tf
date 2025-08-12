@@ -94,7 +94,7 @@ module "container_insights_pod_identity" {
 }
 
 ################################################################################
-# Bedrock Model Invocation Logging Configuration
+# Bedrock Model Invocation Logging
 ################################################################################
 
 module "bedrock_logging_role" {
