@@ -1,0 +1,26 @@
+[project]
+name = "probe-mcp-mvp"
+version = "1.0.0"
+description = "MCP Server for interacting with Probe42 API"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "fastmcp>=0.4.0",
+    "httpx>=0.25.0",
+]
+
+[project.license]
+file = "LICENSE"
+
+[project.scripts]
+probe-mcp-server = "probe_mcp_server:main"
+
+[build-system]
+requires = [
+    "hatchling",
+]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/probe_mcp_server"]
