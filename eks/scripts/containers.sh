@@ -22,6 +22,11 @@ docker push ${ECR_REPO_WEATHER_MCP_URI}:latest
 docker build --platform linux/amd64 -t ${ECR_REPO_WEATHER_AGENT_URI}:latest "${WEATHER_AGENT_DIRECTORY}"
 docker push ${ECR_REPO_WEATHER_AGENT_URI}:latest
 
+# Build and push Travel Agent Service
+docker build --platform linux/amd64 -t ${ECR_REPO_TRAVEL_AGENT_URI}:latest "${TRAVEL_AGENT_DIRECTORY}"
+docker push ${ECR_REPO_TRAVEL_AGENT_URI}:latest
+
+
 # Build and push Agent UI
 docker build --platform linux/amd64 -t ${ECR_REPO_AGENT_UI_URI}:latest "${UI_AGENT_DIRECTORY}"
 docker push ${ECR_REPO_AGENT_UI_URI}:latest
