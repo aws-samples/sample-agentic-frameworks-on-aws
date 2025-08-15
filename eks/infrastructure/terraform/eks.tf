@@ -99,6 +99,7 @@ module "container_insights_pod_identity" {
 
 module "bedrock_logging_role" {
   source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  version = "~> 5.60"
 
   create_role                     = true
   create_custom_role_trust_policy = true
@@ -137,6 +138,7 @@ EOF
 
 module "iam_policy" {
   source = "terraform-aws-modules/iam/aws//modules/iam-policy"
+  version = "~> 5.60"
 
   name        = "${local.name}-bedrock-logging-policy"
   path        = "/"
