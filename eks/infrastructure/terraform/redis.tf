@@ -1,5 +1,6 @@
 module "elasticache" {
-  source = "terraform-aws-modules/elasticache/aws"
+  source  = "terraform-aws-modules/elasticache/aws"
+  version = ">= 1.7"
 
   cluster_id               = local.name
   create_cluster           = true
