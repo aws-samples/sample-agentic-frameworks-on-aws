@@ -4,10 +4,10 @@
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.31"
+  version = "~> 21.0"
 
-  cluster_name    = var.name
-  cluster_version = "1.32"
+  name               = var.name
+  kubernetes_version = "1.32"
 
   iam_role_use_name_prefix = false
   iam_role_name            = "${local.name}-eks-cluster-role"
@@ -18,12 +18,12 @@ module "eks" {
   # Give the Terraform identity admin access to the cluster
   # which will allow it to deploy resources into the cluster
   enable_cluster_creator_admin_permissions = true
-  cluster_endpoint_public_access           = true
+  endpoint_public_access                   = true
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  cluster_compute_config = {
+  compute_config = {
     enabled    = true
     node_pools = ["general-purpose"]
   }
@@ -42,7 +42,7 @@ output "configure_kubectl" {
 
 module "eks_blueprints_addons" {
   source  = "aws-ia/eks-blueprints-addons/aws"
-  version = "~> 1.16"
+  version = "~> 1.22"
 
   cluster_name      = module.eks.cluster_name
   cluster_endpoint  = module.eks.cluster_endpoint
@@ -70,7 +70,7 @@ module "eks_blueprints_addons" {
 
 module "container_insights_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   ## IAM role / policy
   name            = "${local.name}-cloudwatch-agent"
@@ -98,67 +98,63 @@ module "container_insights_pod_identity" {
 ################################################################################
 
 module "bedrock_logging_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
-  version = "~> 5.60"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role"
+  version = "~> 6.1"
 
-  create_role                     = true
-  create_custom_role_trust_policy = true
-  custom_role_trust_policy        = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "bedrock.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole",
-      "Condition": {
-        "StringEquals": {
-          "aws:SourceAccount": "${data.aws_caller_identity.current.account_id}"
+  name = local.name
+
+  trust_policy_permissions = {
+    BedrockAssumeRole = {
+      principals = [{
+        type        = "Service"
+        identifiers = ["bedrock.amazonaws.com"]
+      }]
+      actions = ["sts:AssumeRole"]
+      condition = [
+        {
+          test     = "StringEquals"
+          variable = "aws:SourceAccount"
+          values   = [data.aws_caller_identity.current.account_id]
         },
-        "ArnLike": {
-          "aws:SourceArn": "arn:aws:bedrock:${local.region}:${data.aws_caller_identity.current.account_id}:*"
+        {
+          test     = "ArnLike"
+          variable = "aws:SourceArn"
+          values   = ["arn:aws:bedrock:${local.region}:${data.aws_caller_identity.current.account_id}:*"]
         }
-      }
+      ]
     }
-  ]
+  }
+
+  policies = {
+    BedrockLoggingPolicy = module.iam_policy.arn
+  }
+
+  tags = local.tags
 }
-EOF
-
-  role_name         = "${local.name}-bedrock-logging-role"
-  role_requires_mfa = false
-
-  custom_role_policy_arns = [
-    module.iam_policy.arn,
-  ]
-  number_of_custom_role_policy_arns = 1
-}
-
 
 module "iam_policy" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-policy"
-  version = "~> 5.60"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
+  version = "~> 6.1"
 
-  name        = "${local.name}-bedrock-logging-policy"
+  # name_prefix = local.name
   path        = "/"
   description = "Policy for Bedrock model invocation logging"
 
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
+  policy = <<-EOF
     {
-      "Action": [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          "Effect": "Allow",
+          "Resource": "*"
+        }
+      ]
     }
-  ]
-}
-EOF
+  EOF
 }
 
 module "log_group" {
@@ -179,7 +175,7 @@ resource "aws_bedrock_model_invocation_logging_configuration" "this" {
 
     cloudwatch_config {
       log_group_name = "/aws/bedrock/model-invocation"
-      role_arn       = module.bedrock_logging_role.iam_role_arn
+      role_arn       = module.bedrock_logging_role.arn
     }
   }
 }
