@@ -1,0 +1,8 @@
+# Use this to specify the location of the remote a2a agents, overrides the default a2a_agents.json in values.yaml inside the helm chart
+a2a:
+  a2a_agents.json: |
+    {
+      "urls": [
+        "http://weather-agent:9000/"
+      ]
+    }

@@ -28,6 +28,19 @@ variable "weather_service_account" {
   default     = "weather-agent"
 }
 
+variable "travel_namespace" {
+  description = "Kubernetes namespace"
+  type        = string
+  default     = "agents"
+}
+
+variable "travel_service_account" {
+  description = "Kubernetes service account name"
+  type        = string
+  default     = "travel-agent"
+}
+
+
 variable "bedrock_model_id" {
   description = "Model ID for the agents"
   type        = string

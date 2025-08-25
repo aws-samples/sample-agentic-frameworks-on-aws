@@ -1,0 +1,10 @@
+{{- if (index .Values.a2a "a2a_agents.json") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agent.fullname" . }}-a2a-config
+  labels:
+    {{- include "agent.labels" . | nindent 4 }}
+data:
+  a2a_agents.json: {{ index .Values.a2a "a2a_agents.json" | quote }}
+{{- end }}
