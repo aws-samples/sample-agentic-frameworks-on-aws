@@ -27,6 +27,14 @@ helm upgrade ${KUBERNETES_APP_WEATHER_AGENT_NAME} "${AGENT_HELM_CHART}" \
   --create-namespace \
   -f "${WEATHER_AGENT_HELM_VALUES}"
 
+# Deploy the Agent
+helm upgrade ${KUBERNETES_APP_TRAVEL_AGENT_NAME} "${AGENT_HELM_CHART}" \
+  --install \
+  --namespace ${KUBERNETES_APP_TRAVEL_AGENT_NAMESPACE} \
+  --create-namespace \
+  -f "${TRAVEL_AGENT_HELM_VALUES}"
+
+
 # Create OAuth secret for the Agent UI
 kubectl create ns ${KUBERNETES_APP_AGENT_UI_NAMESPACE} || true
 kubectl delete secret ${KUBERNETES_APP_AGENT_UI_SECRET_NAME} \
@@ -53,6 +61,10 @@ kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_MCP_NAME} \
 # Wait for Agent to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_WEATHER_AGENT_NAME} \
   --namespace ${KUBERNETES_APP_WEATHER_AGENT_NAMESPACE}
+
+# Wait for Agent to be ready
+kubectl rollout status deployment ${KUBERNETES_APP_TRAVEL_AGENT_NAME} \
+  --namespace ${KUBERNETES_APP_TRAVEL_AGENT_NAMESPACE}
 
 # Wait for Agent UI to be ready
 kubectl rollout status deployment ${KUBERNETES_APP_AGENT_UI_NAME} \
