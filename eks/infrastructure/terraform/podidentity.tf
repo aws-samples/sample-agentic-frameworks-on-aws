@@ -1,6 +1,6 @@
 module "weather_agent_pod_identity" {
   source  = "terraform-aws-modules/eks-pod-identity/aws"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   ## IAM role / policy
   name                 = "${local.name}-bedrock-role"
