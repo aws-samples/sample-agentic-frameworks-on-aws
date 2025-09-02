@@ -75,10 +75,8 @@ build_and_push() {
     local name=$3
     local start_time=$(date +%s)
 
-    echo "[$(date '+%H:%M:%S')] Starting ${name}..."
-    docker buildx build --platform linux/amd64,linux/arm64 -t ${image_uri}:latest "${directory}"
-    echo "[$(date '+%H:%M:%S')] Pushing ${name}..."
-    docker push ${image_uri}:latest
+    echo "[$(date '+%H:%M:%S')] Building and pushing ${name}..."
+    docker buildx build --platform linux/amd64,linux/arm64 --push -t ${image_uri}:latest "${directory}"
 
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
