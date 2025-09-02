@@ -10,18 +10,40 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 
 # Parse command line arguments
 SKIP_TERRAFORM=false
+USE_BUILDX=false
+BUILDX_PLATFORM=""
 for arg in "$@"; do
     case $arg in
         --skip-terraform)
             SKIP_TERRAFORM=true
             shift
             ;;
+        --buildx-both)
+            USE_BUILDX=true
+            BUILDX_PLATFORM="linux/amd64,linux/arm64"
+            shift
+            ;;
+        --buildx-amd64)
+            USE_BUILDX=true
+            BUILDX_PLATFORM="linux/amd64"
+            shift
+            ;;
+        --buildx-arm64)
+            USE_BUILDX=true
+            BUILDX_PLATFORM="linux/arm64"
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [--skip-terraform] [--help]"
+            echo "Usage: $0 [--skip-terraform] [--buildx-both|--buildx-amd64|--buildx-arm64] [--help]"
             echo ""
             echo "Options:"
             echo "  --skip-terraform    Skip terraform preparation scripts"
+            echo "  --buildx-both       Use docker buildx for both amd64 and arm64 platforms"
+            echo "  --buildx-amd64      Use docker buildx for amd64 platform only"
+            echo "  --buildx-arm64      Use docker buildx for arm64 platform only"
             echo "  -h, --help         Show this help message"
+            echo ""
+            echo "Note: If no buildx flag is specified, uses standard docker build/push"
             exit 0
             ;;
         *)
@@ -75,8 +97,15 @@ build_and_push() {
     local name=$3
     local start_time=$(date +%s)
 
-    echo "[$(date '+%H:%M:%S')] Building and pushing ${name}..."
-    docker buildx build --platform linux/amd64,linux/arm64 --push -t ${image_uri}:latest "${directory}"
+    if [[ "$USE_BUILDX" == "true" ]]; then
+        echo "[$(date '+%H:%M:%S')] Building and pushing ${name} with buildx (${BUILDX_PLATFORM})..."
+        docker buildx build --platform ${BUILDX_PLATFORM} --push -t ${image_uri}:latest "${directory}"
+    else
+        echo "[$(date '+%H:%M:%S')] Building ${name} with standard docker..."
+        docker build --platform linux/amd64 -t ${image_uri}:latest "${directory}"
+        echo "[$(date '+%H:%M:%S')] Pushing ${name}..."
+        docker push ${image_uri}:latest
+    fi
 
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
@@ -88,6 +117,28 @@ build_and_push() {
 
 # Clean up any previous timing files
 rm -f /tmp/build_times_$$
+
+
+
+# Setup buildx only if using buildx flags
+if [[ "$USE_BUILDX" == "true" ]]; then
+    echo "Setting up Docker buildx for platform: ${BUILDX_PLATFORM}"
+    # Only create and inspect if builder is not already created
+    if ! docker buildx ls | grep -q "^builder "; then
+        echo "Creating buildx node builder with --driver docker-container"
+        docker buildx ls
+        docker buildx create --name builder --driver docker-container --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+    else
+        docker buildx ls
+        docker buildx use builder
+        docker buildx ls
+    fi
+else
+    echo "Using standard docker build and push (no buildx flags specified)"
+fi
+
 
 # Start all builds in parallel
 TOTAL_START=$(date +%s)
