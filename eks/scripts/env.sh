@@ -10,10 +10,49 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "SCRIPTDIR=$SCRIPTDIR"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
+# Parse command line arguments
+SKIP_TERRAFORM=false
+for arg in "$@"; do
+    case $arg in
+        --skip-terraform)
+            SKIP_TERRAFORM=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: source $0 [--skip-terraform] [--help]"
+            echo ""
+            echo "This script sets up environment variables for the agentic AI on EKS project."
+            echo ""
+            echo "Options:"
+            echo "  --skip-terraform    Skip terraform preparation scripts"
+            echo "  -h, --help         Show this help message"
+            echo ""
+            echo "Environment variables exported:"
+            echo "  AWS_ACCOUNT_ID, AWS_REGION"
+            echo "  CLUSTER_NAME"
+            echo "  KUBERNETES_APP_* (various Kubernetes configurations)"
+            echo "  ECR_REPO_* (ECR repository configurations)"
+            echo "  BEDROCK_MODEL_ID"
+            echo "  *_HELM_CHART, *_DIRECTORY, *_HELM_VALUES (paths and configurations)"
+            return 0
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            echo "Use --help for usage information"
+            return 1
+            ;;
+    esac
+done
+
 # Setup the .env, and web/.env, and workshop-values.yaml
-$SCRIPTDIR/terraform-prep-env-weather-agent.sh
-$SCRIPTDIR/terraform-prep-env-travel-agent.sh
-$SCRIPTDIR/terraform-prep-env-weather-ui.sh
+if [[ "$SKIP_TERRAFORM" == "false" ]]; then
+    echo "Running terraform preparation scripts..."
+    $SCRIPTDIR/terraform-prep-env-weather-agent.sh
+    $SCRIPTDIR/terraform-prep-env-travel-agent.sh
+    $SCRIPTDIR/terraform-prep-env-weather-ui.sh
+else
+    echo "Skipping terraform preparation scripts..."
+fi
 
 # AWS Configuration
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
