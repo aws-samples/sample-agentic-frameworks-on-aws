@@ -126,9 +126,10 @@ if [[ "$USE_BUILDX" == "true" ]]; then
     # Only create and inspect if builder is not already created
     if ! docker buildx ls | grep -q "^builder "; then
         echo "Creating buildx node builder with --driver docker-container"
-        # We think this is not need it
+        # This is need it to get qemu properly setup
         sudo -u root touch /proc/sys/fs/binfmt_misc
         docker run --privileged --rm tonistiigi/binfmt --install all
+
         docker buildx ls
         docker buildx create --name builder --driver docker-container --use
         docker buildx inspect --bootstrap
@@ -136,7 +137,6 @@ if [[ "$USE_BUILDX" == "true" ]]; then
     else
         docker buildx ls
         docker buildx use builder
-        docker buildx ls
     fi
 else
     echo "Using standard docker build and push (no buildx flags specified)"
