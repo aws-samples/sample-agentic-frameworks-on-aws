@@ -9,15 +9,10 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 [[ -n "${DEBUG:-}" ]] && echo "ROOTDIR=$ROOTDIR"
 
 # Parse command line arguments
-SKIP_TERRAFORM=false
 USE_BUILDX=false
 BUILDX_PLATFORM=""
 for arg in "$@"; do
     case $arg in
-        --skip-terraform)
-            SKIP_TERRAFORM=true
-            shift
-            ;;
         --buildx-both)
             USE_BUILDX=true
             BUILDX_PLATFORM="linux/amd64,linux/arm64"
@@ -34,16 +29,16 @@ for arg in "$@"; do
             shift
             ;;
         -h|--help)
-            echo "Usage: $0 [--skip-terraform] [--buildx-both|--buildx-amd64|--buildx-arm64] [--help]"
+            echo "Usage: $0 [--buildx-both|--buildx-amd64|--buildx-arm64] [--help]"
             echo ""
             echo "Options:"
-            echo "  --skip-terraform    Skip terraform preparation scripts"
             echo "  --buildx-both       Use docker buildx for both amd64 and arm64 platforms"
             echo "  --buildx-amd64      Use docker buildx for amd64 platform only"
             echo "  --buildx-arm64      Use docker buildx for arm64 platform only"
             echo "  -h, --help         Show this help message"
             echo ""
             echo "Note: If no buildx flag is specified, uses standard docker build/push"
+            echo "Note: Terraform preparation scripts are always skipped"
             exit 0
             ;;
         *)
@@ -54,12 +49,8 @@ for arg in "$@"; do
     esac
 done
 
-# Source env.sh with or without --skip-terraform flag
-if [[ "$SKIP_TERRAFORM" == "true" ]]; then
-    source "${SCRIPTDIR}/env.sh" --skip-terraform
-else
-    source "${SCRIPTDIR}/env.sh"
-fi
+# Always source env.sh with --skip-terraform flag
+source "${SCRIPTDIR}/env.sh" --skip-terraform
 
 # Login into ECR, in case we need it
 aws ecr get-login-password --region ${AWS_REGION} | \
