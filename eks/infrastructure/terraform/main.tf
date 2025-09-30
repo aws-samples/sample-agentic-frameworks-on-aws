@@ -1,5 +1,5 @@
 provider "aws" {
-  region = local.region
+
 }
 
 # This provider is required for ECR to authenticate with public repos. Please note ECR authentication requires us-east-1 as region hence its hardcoded below.
@@ -38,8 +38,7 @@ data "aws_availability_zones" "available" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  name   = "agentic-ai-on-eks"
-  region = var.region
+  name = "agentic-ai-on-eks"
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)

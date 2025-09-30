@@ -4,12 +4,6 @@ variable "name" {
   default     = "agentic-ai-on-eks-frameworks-ref-architecture"
 }
 
-variable "region" {
-  description = "Region for the EKS cluster"
-  type        = string
-  default     = "us-west-2"
-}
-
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
