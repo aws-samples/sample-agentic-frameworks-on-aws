@@ -1,5 +1,5 @@
 provider "aws" {
-  region = local.region
+
 }
 
 # This provider is required for ECR to authenticate with public repos. Please note ECR authentication requires us-east-1 as region hence its hardcoded below.
@@ -36,8 +36,7 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  name   = var.name != "" ? var.name : "eks-blueprints"
-  region = var.region != "" ? var.region : "us-west-2"
+  name = var.name != "" ? var.name : "eks-blueprints"
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
