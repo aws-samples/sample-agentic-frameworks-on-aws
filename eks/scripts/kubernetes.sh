@@ -50,9 +50,10 @@ case "$COMPONENT" in
         ;;
 esac
 
-source "${SCRIPTDIR}/env.sh"
+# Always skip terraform
+source "${SCRIPTDIR}/env.sh" --skip-terraform
 
-# Get kubeconfigmkdir
+# Get kubeconfig
 aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}
 
 # Function to deploy Weather MCP Server
