@@ -11,7 +11,6 @@ ROOTDIR="$(cd ${SCRIPTDIR}/..; pwd )"
 # Not need it when running in workshop
 #$SCRIPTDIR/infra.sh
 #source $SCRIPTDIR/env.sh
-#$SCRIPTDIR/containers.sh
-
+$SCRIPTDIR/containers.sh
 $SCRIPTDIR/kubernetes.sh
 $SCRIPTDIR/ui.sh
