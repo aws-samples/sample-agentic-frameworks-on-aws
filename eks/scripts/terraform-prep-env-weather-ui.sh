@@ -40,7 +40,7 @@ echo "OAUTH_LOGOUT_URL=$OAUTH_LOGOUT_URL" >> $UI_AGENT_DST_FILE_NAME
 echo "OAUTH_WELL_KNOWN_URL=$OAUTH_WELL_KNOWN_URL" >> $UI_AGENT_DST_FILE_NAME
 echo "OAUTH_JWKS_URL=$OAUTH_JWKS_URL" >> $UI_AGENT_DST_FILE_NAME
 
-
+BASE_URL=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath={.status.loadBalancer.ingress[0].hostname})
 
 ECR_REPO_AGENT_UI_URI=$(terraform -chdir="$TERRAFORM_DIRECTORY" output -json ecr_agent_ui_repository_url)
 
@@ -48,9 +48,18 @@ cat <<EOF > $UI_AGENT_HELM_VALUES
 image:
   repository: $ECR_REPO_AGENT_UI_URI
 env:
-env:
   AGENT_UI_ENDPOINT_URL_1: "http://weather-agent.agents/prompt"
   AGENT_UI_ENDPOINT_URL_2: "http://travel-agent.agents/prompt"
-  BASE_PATH: "${IDE_URL:+/proxy/8000}"
-  BASE_URL: "${IDE_URL:-http://localhost:8000}"
+  BASE_PATH: "/"
+  BASE_URL: "http://${BASE_URL:-localhost:8000}"
+  AUTH_ENABLED: "false"
+fastapi:
+  ingress:
+    enabled: true
+ingress:
+  enabled: true
+  className: nginx
+  defaultRule:
+    enabled: true
+
 EOF
