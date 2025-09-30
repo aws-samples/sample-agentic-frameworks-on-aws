@@ -51,7 +51,7 @@ case "$COMPONENT" in
 esac
 
 # Always skip terraform
-source "${SCRIPTDIR}/env.sh" --skip-terraform
+source "${SCRIPTDIR}/env.sh"
 
 # Get kubeconfig
 aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}
