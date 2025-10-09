@@ -1,6 +1,6 @@
 import os
 from strands.multiagent.a2a import A2AServer
-from agent import get_agent
+from .agent import get_agent
 
 def create_a2a_server(port, http_url):
     """Create and configure an A2A server with the agent."""
@@ -14,7 +14,7 @@ def create_a2a_server(port, http_url):
     print(f"A2A Server available on http_url:{http_url}")
     return server
 
-def run_a2a_server():
+def main():
     """Start the A2A server and keep it running."""
     port = int(os.getenv("A2A_PORT", "9000"))
     http_url = os.getenv("A2A_URL", f"http://localhost:{port}")
@@ -27,4 +27,4 @@ def run_a2a_server():
         server.stop()
 
 if __name__ == "__main__":
-    run_a2a_server()
+    main()

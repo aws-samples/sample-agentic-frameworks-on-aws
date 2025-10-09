@@ -8,12 +8,14 @@ dependencies = [
     "strands-agents[a2a]>=1.9.1",
     "strands-agents-tools>=0.2.8",
     "mcp[cli]>=1.15.0",
-    "geopy>=2.4.1"
+    "geopy>=2.4.1",
+    "pyyaml>=6.0"
 ]
 
 [project.scripts]
 "agent"            = "src.agent:main"
-"agent-a2a-server" = "src.agent_a2a_server:run_a2a_server"
+"agent-a2a-server" = "src.agent_a2a_server:main"
+"agent-a2a-client" = "src.agent_a2a_client:main"
 
 [build-system]
 requires = ["hatchling"]
