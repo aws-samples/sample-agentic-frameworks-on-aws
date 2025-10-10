@@ -8,51 +8,30 @@ from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="agent-app/1.0", timeout=10)
 BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
 
-# Strands Agent SDK Community Tools Package
-from strands_tools import current_time
-
-# Custom Python Tool
-@tool
-def geocode_location(location: str) -> dict:
-    """Convert a location string to latitude and longitude coordinates.
-    Args:
-        location: Name of the location (city, address, etc.)
-    Returns:
-        Dictionary with latitude and longitude
-    """
-    try:
-        location_data = geolocator.geocode(location)
-        if location_data:
-            return {
-                "latitude": round(location_data.latitude, 4),
-                "longitude": round(location_data.longitude, 4),
-                "address": location_data.address
-            }
-        return {"error": "Location not found"}
-    except Exception as e:
-        return {"error": str(e)}
-
-# MCP Tools
+# MCP Tools (Access the remote streamable http MCP Server accesible on WEATHER_MCP_URL)
 def get_mcp_tools():
+    """Get the list of tools from the MCP server."""
     mcp_url = os.getenv("WEATHER_MCP_URL", f"http://localhost:8080/mcp")
     mcp_client = MCPClient(lambda: streamablehttp_client(mcp_url))
     mcp_client.start()
     return mcp_client.list_tools_sync()
 
+# Import Tools from the Strands Agent SDK Community Tools Package
+from strands_tools import current_time
+
+
 # Agent Definition
 def get_agent():
     agent = Agent(
-        name="Agent",
-        description="Agent with skills like get the weather forecast up to 7 days in US City, current time or date, and convert a US City or Address to coordinates",
+        description="Helpful agent that assists with weather forecasts, weather alerts, and time/date queries for US locations",
         model=BEDROCK_MODEL_ID,
         system_prompt="""
-        You are a helpful Assistant, you assist the user on any task or question,
-        task like convert a US location(city, address, etc.) to latitude and longitude coordinates
-        task like what's the weather forecast in a US City or Address location
+        Helpful Agent, assists the user on many tasks or questions,
+        task like what's the weather forecast in a US City
         task like find weather alerts for a given US State
         task like what's the current time or date
         """,
-        tools=[current_time, geocode_location, get_mcp_tools()]
+        tools=[get_mcp_tools(), current_time]
     )
     return agent
 
