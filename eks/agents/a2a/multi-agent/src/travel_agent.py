@@ -18,41 +18,39 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# A2A Client as Agent Tool
 @tool
-def weather_agent_provider(request: str) -> str:
-    """Handle Weather agent connection using a2aclienttoolprovider
+def a2a_remote_agent_interface(request: str) -> str:
+    """Handle A2A agent connection using A2AClientToolProvider
        Helpful agent that assists with weather forecasts, weather alerts, and time/date queries for US locations
+       Leverage tools like: get up to next 7 days weather forecast US city, get weather alert for US state, get current date
 
     Args:
-        request (str): The request to send to the weather agent
+        request (str): The natural language request to send to the AI Agent
     Returns:
-        str: Response from the weather agent
+        str: Response from the agent
     Raises:
-        Exception: If weather agent connection fails
+        Exception: If agent connection fails
     """
-    weather_agent_a2a_url = os.getenv("WEATHER_A2A_SERVER_URL", f"http://localhost:9000")
-     # Initialize provider with memory agent URL
-    provider = A2AClientToolProvider(known_agent_urls=[weather_agent_a2a_url])
-    logger.debug(f"Initialized weather agent provider: {provider}")
-    # Get available tools from provider
-    tools = provider.tools
-    logger.info(f"Available weather agent tools: {[tool.tool_name for tool in tools]}")
-    # Create agent with tools and system prompt
+    remote_agent_a2a_url = os.getenv("WEATHER_A2A_SERVER_URL", f"http://localhost:9000")
+    a2a_tool_provider = A2AClientToolProvider(known_agent_urls=[remote_agent_a2a_url])
+    tools = a2a_tool_provider.tools
+    logger.info(f"Available remote A2A agent tools: {[tool.tool_name for tool in tools]}")
+
     agent = Agent(
         model=BEDROCK_MODEL_ID,
         tools=tools,
-        system_prompt="You are a weather agent interface. Discover agents and tools you can use",
+        system_prompt="You are a agent interface. Discover agents and tools you can use",
         callback_handler=None
     )
     try:
-        # Send request and get response
-        logger.info(f"Weather agent received request: {request[:200]}...")
+        logger.info(f"Agent received request: {request[:200]}...")
         response = agent(request)
         return str(response)
 
     except Exception as e:
-        logger.error(f"Weather agent operation failed: {e}")
-        raise Exception(f"Failed to process weather agent request: {str(e)}")
+        logger.error(f"remote a2a agent interface operation failed: {e}")
+        raise Exception(f"Failed to process remote a2a agent request: {str(e)}")
 
 
 def travel_agent() -> Agent:
@@ -63,17 +61,17 @@ def travel_agent() -> Agent:
         and weather conditions. Coordinates with weather and location agents to provide personalized recommendations.
         """,
         system_prompt="""
-        Always check agents available to see if there's one that can help answer the user's question
-        As trip advisor you can recommend fun activities to the user in a city
-        You can only help the user as a Trip Advisor, and can provide the following services like user location, current date, and weather forecast
-        Use one of the agents to get the users location if they don't provide one
+        Always check available agents to see if there's one that can help answer the user's question
+        As a trip advisor, you can recommend fun activities to the user in a city
+        You can only help the user as a Trip Advisor and can provide the following services: user location, current date, and weather forecast
+        Use one of the agents to get the user's location if they don't provide one
         Use one of the agents to get weather information
         Use one of the agents to get current time or date
-        Always Check the weather forecast when providing appropriate activity recommendations
-        Take into account weather conditions when suggesting an outdoor activity
-        Recommend things to bring like umbrella, suncreen lotion, hat, boots, attire based on weather conditions
+        Always check the weather forecast when providing appropriate activity recommendations
+        Take into account weather conditions when suggesting outdoor activities
+        Recommend things to bring like umbrella, sunscreen lotion, hat, boots, and attire based on weather conditions
         """,
-        tools=[weather_agent_provider]
+        tools=[a2a_remote_agent_interface]
     )
     return agent
 
@@ -81,6 +79,11 @@ def travel_agent() -> Agent:
 def run_restapi_server():
     """Start the FastAPI server"""
     app = FastAPI()
+
+    @app.get("/healthz")
+    async def health_check():
+        return {"status": "healthy"}
+
     @app.post("/prompt")
     async def handle_prompt(request: dict) -> dict:
         agent = travel_agent()
@@ -114,9 +117,7 @@ def run_a2a_server():
 
 def main():
     agent = travel_agent()
-    #agent("How can you help me?")
-    agent("I'm visting Las Vegas this week")
-    #weather_agent_provider("What's the weather like in Atlanta?")
+    agent("Hello, what can you help me with?")
 
 if __name__ == "__main__":
     main()

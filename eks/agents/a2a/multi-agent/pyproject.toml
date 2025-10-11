@@ -7,12 +7,13 @@ requires-python = ">=3.13"
 dependencies = [
     "strands-agents[a2a]>=1.9.1",
     "strands-agents-tools>=0.2.8",
+    "fastapi>=0.118.0",
 ]
 
 [project.scripts]
-"agent"                   = "src.travel_agent:main"
-"agent-restapi-server"    = "src.travel_agent:run_restapi_server"
-"agent-a2a-server"        = "src.travel_agent:run_a2a_server"
+"multi-agent"                   = "src.travel_agent:main"
+"multi-agent-restapi-server"    = "src.travel_agent:run_restapi_server"
+"multi-agent-a2a-server"        = "src.travel_agent:run_a2a_server"
 
 
 [build-system]

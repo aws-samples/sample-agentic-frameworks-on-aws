@@ -1,14 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: weather-agent
+  name: travel-agent
   namespace: agents
   labels:
-    app.kubernetes.io/name: weather-agent
+    app.kubernetes.io/name: travel-agent
 spec:
   selector:
-    app.kubernetes.io/name: weather-agent
+    app.kubernetes.io/name: travel-agent
   ports:
+    - port: 3000
+      targetPort: fastapi
+      name: fastapi
     - port: 9000
       targetPort: a2a
       name: a2a
@@ -16,45 +19,49 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: weather-agent
+  name: travel-agent
   namespace: agents
   labels:
-    app.kubernetes.io/name: weather-agent
+    app.kubernetes.io/name: travel-agent
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: weather-agent
+      app.kubernetes.io/name: travel-agent
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: weather-agent
+        app.kubernetes.io/name: travel-agent
     spec:
-      serviceAccountName: weather-agent
+      serviceAccountName: travel-agent
       containers:
-        - name: weather-agent
+        - name: travel-agent
           image: ${ECR_REPO_WEATHER_AGENT_URI}:latest
           ports:
             - containerPort: 9000
               name: a2a
+            - containerPort: 3000
+              name: fastapi
           env:
-          - name: WEATHER_MCP_URL
-            value: "http://weather-mcp.mcp-servers:8080/mcp"
-          - name: A2A_URL
+          - name: FASTAPI_PORT
+            value: "3000"
+          - name: WEATHER_A2A_SERVER_URL
             value: "http://weather-agent.agents:9000"
-          command: ["agent-a2a-server"]
+          - name: A2A_URL
+            value: "http://travel-agent.agents:9000"
+          command: ["multi-agent-restapi-server"]
           livenessProbe:
             tcpSocket:
-              port: 9000
+              port: 3000
           readinessProbe:
             httpGet:
-              path: /.well-known/agent-card.json
-              port: 9000
+              path: /healthz
+              port: 3000
 
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: weather-agent
+  name: travel-agent
   namespace: agents
   labels:
-    app.kubernetes.io/name: weather-agent
+    app.kubernetes.io/name: travel-agent
