@@ -1,5 +1,5 @@
 [project]
-name = "my-agent"
+name = "travel-agent"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
@@ -7,14 +7,12 @@ requires-python = ">=3.13"
 dependencies = [
     "strands-agents[a2a]>=1.9.1",
     "strands-agents-tools>=0.2.8",
-    "mcp[cli]>=1.15.0",
-    "geopy>=2.4.1",
-    "pyyaml>=6.0"
 ]
 
 [project.scripts]
-"agent"            = "src.agent:main"
-"agent-a2a-server" = "src.agent_a2a_server:main"
+"agent"                   = "src.travel_agent:main"
+"agent-restapi-server"    = "src.travel_agent:run_restapi_server"
+"agent-a2a-server"        = "src.travel_agent:run_a2a_server"
 
 
 [build-system]
