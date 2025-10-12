@@ -35,12 +35,12 @@ spec:
       serviceAccountName: travel-agent
       containers:
         - name: travel-agent
-          image: ${ECR_REPO_WEATHER_AGENT_URI}:latest
+          image: ${ECR_REPO_TRAVEL_AGENT_URI}:latest
           ports:
-            - containerPort: 9000
-              name: a2a
             - containerPort: 3000
               name: fastapi
+            - containerPort: 9000
+              name: a2a
           env:
           - name: FASTAPI_PORT
             value: "3000"
@@ -56,7 +56,6 @@ spec:
             httpGet:
               path: /healthz
               port: 3000
-
 ---
 apiVersion: v1
 kind: ServiceAccount
