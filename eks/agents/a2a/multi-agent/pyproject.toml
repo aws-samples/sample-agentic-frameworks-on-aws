@@ -11,9 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-"multi-agent"                   = "src.travel_agent:main"
-"multi-agent-restapi-server"    = "src.travel_agent:run_restapi_server"
-"multi-agent-a2a-server"        = "src.travel_agent:run_a2a_server"
+"multi-agent-a2a-server" = "src.travel_agent:run_a2a_server"
 
 
 [build-system]

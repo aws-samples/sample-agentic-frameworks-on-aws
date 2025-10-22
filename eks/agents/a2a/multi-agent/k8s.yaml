@@ -9,9 +9,6 @@ spec:
   selector:
     app.kubernetes.io/name: travel-agent
   ports:
-    - port: 3000
-      targetPort: fastapi
-      name: fastapi
     - port: 9000
       targetPort: a2a
       name: a2a
@@ -37,25 +34,27 @@ spec:
         - name: travel-agent
           image: ${ECR_REPO_TRAVEL_AGENT_URI}:latest
           ports:
-            - containerPort: 3000
-              name: fastapi
             - containerPort: 9000
               name: a2a
           env:
+          - name: BEDROCK_MODEL_ID
+            value: ${BEDROCK_MODEL_ID}
           - name: FASTAPI_PORT
             value: "3000"
           - name: WEATHER_A2A_SERVER_URL
             value: "http://weather-agent.agents:9000"
+          - name: A2A_PORT
+            value: "9000"
           - name: A2A_URL
             value: "http://travel-agent.agents:9000"
-          command: ["multi-agent-restapi-server"]
+          command: ["multi-agent-a2a-server"]
           livenessProbe:
             tcpSocket:
-              port: 3000
+              port: 9000
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: 3000
+              path: /.well-known/agent-card.json
+              port: 9000
 ---
 apiVersion: v1
 kind: ServiceAccount

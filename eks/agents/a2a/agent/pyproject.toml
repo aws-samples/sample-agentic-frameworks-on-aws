@@ -14,7 +14,7 @@ dependencies = [
 
 [project.scripts]
 "agent"            = "src.agent:main"
-"agent-a2a-server" = "src.agent_a2a_server:main"
+"agent-a2a-server" = "src.agent_a2a_server:run_a2a_server"
 
 
 [build-system]
