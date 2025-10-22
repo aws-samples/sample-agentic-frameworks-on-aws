@@ -1,3 +1,5 @@
+alias ecr-login="aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO 2>/dev/null"
+
 a2a_client_in_k8s() {
   local AGENT_URL="$1"
   local MESSAGE="$2"

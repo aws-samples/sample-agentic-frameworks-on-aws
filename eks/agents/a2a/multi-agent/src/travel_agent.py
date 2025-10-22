@@ -74,7 +74,7 @@ def travel_agent() -> Agent:
         Recommend things to bring like umbrella, sunscreen lotion, hat, boots, and attire based on weather conditions
         If you have access to hotel agent, recommend hotels based on location and weather conditions
         """,
-        tools=[weather_agent_as_tool, hotel_agent]
+        tools=[weather_agent_as_tool]
     )
     return agent
 

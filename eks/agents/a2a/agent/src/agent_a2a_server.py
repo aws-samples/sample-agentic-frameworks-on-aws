@@ -1,6 +1,6 @@
 import os
 from strands.multiagent.a2a import A2AServer
-from .agent import weather_agent
+from src.agent import weather_agent
 import logging
 import sys
 import os
