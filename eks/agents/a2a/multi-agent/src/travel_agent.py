@@ -19,6 +19,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import Tools from the Strands Agent SDK Community Tools Package
+from strands_tools import current_time
+
 
 # A2A Client as Agent Tool
 @tool
@@ -74,7 +77,7 @@ def travel_agent() -> Agent:
         Recommend things to bring like umbrella, sunscreen lotion, hat, boots, and attire based on weather conditions
         If you have access to hotel agent, recommend hotels based on location and weather conditions
         """,
-        tools=[weather_agent_as_tool]
+        tools=[current_time, weather_agent_as_tool]
     )
     return agent
 
