@@ -39,8 +39,6 @@ spec:
           env:
           - name: BEDROCK_MODEL_ID
             value: ${BEDROCK_MODEL_ID}
-          - name: FASTAPI_PORT
-            value: "3000"
           - name: WEATHER_A2A_SERVER_URL
             value: "http://weather-agent.agents:9000"
           - name: A2A_PORT
@@ -53,7 +51,7 @@ spec:
               port: 9000
           readinessProbe:
             httpGet:
-              path: /.well-known/agent-card.json
+              path: /ping
               port: 9000
 ---
 apiVersion: v1

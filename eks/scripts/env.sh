@@ -46,7 +46,6 @@ done
 
 # Setup the .env, and web/.env, and workshop-values.yaml
 if [[ "$SKIP_TERRAFORM" == "false" ]]; then
-    echo "Running terraform preparation scripts..."
     $SCRIPTDIR/terraform-prep-env-weather-agent.sh
     $SCRIPTDIR/terraform-prep-env-travel-agent.sh
     $SCRIPTDIR/terraform-prep-env-weather-ui.sh

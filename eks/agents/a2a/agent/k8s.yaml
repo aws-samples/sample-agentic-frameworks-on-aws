@@ -51,7 +51,7 @@ spec:
               port: 9000
           readinessProbe:
             httpGet:
-              path: /.well-known/agent-card.json
+              path: /ping
               port: 9000
 
 ---
