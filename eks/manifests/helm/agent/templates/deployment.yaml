@@ -47,6 +47,8 @@ spec:
               value: "{{ .Values.mcp.port }}"
             - name: A2A_PORT
               value: "{{ .Values.a2a.port }}"
+            - name: A2A_HOST
+              value: "{{ .Values.a2a.host }}"
             - name: A2A_URL
               value: "{{ .Values.a2a.http_url }}"
             - name: FASTAPI_PORT

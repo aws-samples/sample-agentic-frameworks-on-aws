@@ -74,6 +74,8 @@ fastapi:
     enabled: false
 a2a:
   port: 9000
+  host: "0.0.0.0"
+  http_url: "http://weather-agent:9000"
   exposedPort: 9000
   ingress:
     enabled: false

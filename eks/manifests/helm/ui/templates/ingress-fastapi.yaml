@@ -24,6 +24,17 @@ spec:
     {{- end }}
   {{- end }}
   rules:
+    {{- if .Values.ingress.defaultRule.enabled }}
+    - http:
+        paths:
+          - path: {{ .Values.ingress.defaultRule.path | default "/" }}
+            pathType: {{ .Values.ingress.defaultRule.pathType | default "Prefix" }}
+            backend:
+              service:
+                name: {{ include "ui.fullname" . }}
+                port:
+                  name: fastapi
+    {{- end }}
     {{- range .Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:

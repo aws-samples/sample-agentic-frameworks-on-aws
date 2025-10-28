@@ -52,13 +52,15 @@ def a2a_agent():
         logger.info("Agent instance created successfully")
 
         port = os.getenv("A2A_PORT", "9000")
-        hosting_http_url = os.getenv("A2A_URL", "0.0.0.0")
+        host_ip = os.getenv("A2A_HOST", "0.0.0.0")
+        hosting_url=os.getenv("A2A_URL", "http://weather-agent:9000")
 
 
         strands_a2a_agent = A2AServer(
             agent=strands_agent,
+            host=host_ip,
             port=int(port),
-            http_url=hosting_http_url
+            http_url=hosting_url
         )
         logger.info("A2A Server wrapper created successfully")
 
