@@ -406,7 +406,7 @@ AWS_REGION=us-west-2
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
 
 # Bedrock Configuration
-BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20250219-v1:0
+BEDROCK_MODEL_ID=global.anthropic.claude-haiku-4-5-20251001-v1:0
 
 # Server Ports
 MCP_PORT=8080                # MCP server port

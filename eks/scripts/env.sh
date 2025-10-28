@@ -90,7 +90,7 @@ export ECR_REPO_AGENT_UI_NAME=agents-on-eks/agent-ui
 export ECR_REPO_AGENT_UI_URI=${ECR_REPO_HOST}/${ECR_REPO_AGENT_UI_NAME}
 
 # Amazon Bedrock Configuration
-export BEDROCK_MODEL_ID=us.anthropic.claude-3-7-sonnet-20250219-v1:0
+export BEDROCK_MODEL_ID=global.anthropic.claude-haiku-4-5-20251001-v1:0
 
 # Helm Charts
 export MCP_HELM_CHART="${ROOTDIR}/manifests/helm/mcp"

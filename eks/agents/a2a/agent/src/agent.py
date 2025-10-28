@@ -4,7 +4,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from strands import Agent, tool
 from strands.tools.mcp.mcp_client import MCPClient
 from urllib import request
-BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 
 # MCP Tools (Access the remote streamable http MCP Server accesible on WEATHER_MCP_URL)
 def get_mcp_tools():

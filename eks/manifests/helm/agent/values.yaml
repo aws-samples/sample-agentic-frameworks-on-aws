@@ -16,7 +16,7 @@ image:
 
 # Agent Config
 env:
-  BEDROCK_MODEL_ID: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+  BEDROCK_MODEL_ID: "global.anthropic.claude-haiku-4-5-20251001-v1:0"
   OAUTH_JWKS_URL: "https://idp-to-be-replaced"
 
 agent:

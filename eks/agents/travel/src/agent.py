@@ -140,21 +140,21 @@ DEFAULT_A2A_CONFIG = """{
 def _get_a2a_agent_urls() -> List[str]:
     """
     Load a2a agent URLs from a config file or return default list if file doesn't exist.
-    
+
     Returns:
         List[str]: List of a2a agent URLs
     """
     # Define possible config file locations
     current_dir = os.path.dirname(__file__)
     project_root = os.path.dirname(current_dir)
-    
+
     config_locations = [
         os.path.join(project_root, "a2a_agents.json"),  # Project root
         os.path.join(current_dir, "a2a_agents.json"),   # src directory
         "/app/a2a_agents.json",                         # Container path
         os.path.join(os.getcwd(), "a2a_agents.json")    # Current working directory
     ]
-    
+
     # Try to load from config file
     for config_file in config_locations:
         if os.path.exists(config_file):
@@ -182,7 +182,7 @@ def create_agent(messages: Optional[Messages]=None,conversation_manager: Optiona
     Returns:
         Agent: A configured AI assistant agent with tools from enabled MCP servers
     """
-    model_id = os.getenv("BEDROCK_MODEL_ID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+    model_id = os.getenv("BEDROCK_MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
     bedrock_model = BedrockModel(model_id=model_id)
     provider = A2AClientToolProvider(known_agent_urls=_get_a2a_agent_urls())
 

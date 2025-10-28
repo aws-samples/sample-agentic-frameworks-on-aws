@@ -38,7 +38,7 @@ variable "travel_service_account" {
 variable "bedrock_model_id" {
   description = "Model ID for the agents"
   type        = string
-  default     = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+  default     = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
 
 # Cognito module variables

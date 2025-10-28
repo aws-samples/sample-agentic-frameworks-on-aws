@@ -8,7 +8,7 @@ import sys
 import os
 from src.challenge.hotel_agent import hotel_agent_as_tool
 
-BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+BEDROCK_MODEL_ID = os.environ.get("BEDROCK_MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 
 # Configure logging
 logging.basicConfig(
