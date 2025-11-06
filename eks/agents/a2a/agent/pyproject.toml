@@ -5,11 +5,9 @@ description = "Add your description here"
 requires-python = ">=3.13"
 
 dependencies = [
-    "strands-agents[a2a]>=1.9.1",
-    "strands-agents-tools>=0.2.8",
-    "mcp[cli]>=1.15.0",
-    "geopy>=2.4.1",
-    "pyyaml>=6.0"
+    "strands-agents[a2a]==1.15.0",
+    "strands-agents-tools==0.2.14",
+    "mcp[cli]==1.20.0"
 ]
 
 [project.scripts]

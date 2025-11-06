@@ -5,9 +5,8 @@ description = "Add your description here"
 requires-python = ">=3.13"
 
 dependencies = [
-    "strands-agents[a2a]>=1.9.1",
-    "strands-agents-tools>=0.2.8",
-    "fastapi>=0.118.0",
+    "strands-agents[a2a]==1.15.0",
+    "strands-agents-tools==0.2.14"
 ]
 
 [project.scripts]

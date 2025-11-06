@@ -2,7 +2,7 @@
 #
 # /// script
 # requires-python = ">=3.13"
-# dependencies = ["a2a-sdk>=0.3.8"]
+# dependencies = ["a2a-sdk>=0.3.10"]
 # ///
 """Simple CLI to send messages to an A2A agent server."""
 
