@@ -65,29 +65,42 @@ cd langgraph/music-store-assistant
 pip install -r requirements.txt
 ```
 
-3. **Configure environment variables**
+3. **Configure AWS credentials**
 
-Copy the example environment file and fill in your credentials:
+The notebook uses boto3's default credential chain. You can configure AWS credentials in several ways:
 
+**Option A: AWS CLI (Recommended)**
+```bash
+aws configure
+```
+
+**Option B: Environment variables**
+
+Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your actual credentials:
-
+Edit `.env` with your configuration:
 ```bash
-# AWS Bedrock Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
-AWS_SESSION_TOKEN=your_aws_session_token_here
+# Required
 AWS_REGION_NAME=us-west-2
 AWS_MODEL_ARN=us.anthropic.claude-sonnet-4-20250514-v1:0
+
+# Optional: Uncomment if not using AWS CLI or IAM roles
+# AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
+# AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
+# AWS_SESSION_TOKEN=your_aws_session_token_here
 
 # LangSmith (Optional - for evaluations)
 LANGSMITH_API_KEY=your_langsmith_api_key_here
 LANGSMITH_TRACING=true
 LANGSMITH_PROJECT=music-store-assistant
 ```
+
+**Option C: IAM Roles (Production)**
+
+If running on AWS infrastructure (EC2, ECS, Lambda), attach an appropriate IAM role with Bedrock permissions.
 
 4. **Launch Jupyter Notebook**
 
