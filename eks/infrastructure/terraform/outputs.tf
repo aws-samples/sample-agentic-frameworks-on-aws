@@ -85,3 +85,8 @@ output "travel_agent_session_store_bucket_name" {
   description = "S3 Bucket name for travel agent session"
   value       = aws_s3_bucket.travel_agent_session_store.bucket
 }
+
+output "configure_kubectl" {
+  description = "Configure kubectl: make sure you're logged in with the correct AWS profile and run the following command to update your kubeconfig"
+  value       = "aws eks --region ${data.aws_region.current.id} update-kubeconfig --name ${module.eks.cluster_name}"
+}
