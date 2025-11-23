@@ -3,6 +3,7 @@ export TF_VAR_cognito_additional_redirect_uri=$IDE_URL/proxy/8000/callback
 export TF_VAR_cognito_additional_logout_uri=$IDE_URL/proxy/8000/
 
 # Set the environment variables for the workshop
+echo "setting environment variables for workshop ..."
 . $HOME/environment/scripts/env.sh
 
 export GOPATH=~/go
@@ -35,10 +36,13 @@ alias emacs=emacs-nox
 alias kns=kubens
 alias kctx=kubectx
 
-alias ecr-login="aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO 2>/dev/null"
+
+alias ecr-login="aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO &> /dev/null"
+echo "login to ECR ..."
 ecr-login
 
-alias eks-kubeconfig="aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME"
+alias eks-kubeconfig="aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME &> /dev/null"
+echo "updating kubeconfig ..."
 eks-kubeconfig
 
 unset PROMPT_COMMAND
@@ -59,7 +63,6 @@ run_in_background() {
     fi
     killport $1
     shift
-    echo "nohup $@ >/dev/null 2>&1 &"
     nohup $@ >/dev/null 2>&1 &
     sleep 10
 }
@@ -81,25 +84,27 @@ a2a_client_in_k8s() {
     --env="AGENT_URL=$AGENT_URL" \
     --env="MESSAGE=$MESSAGE" \
     -- sh -c '
-      uv run --no-project --with "a2a-sdk>=0.3.8" --with httpx python - "$AGENT_URL" "$MESSAGE" <<'"'"'SCRIPT'"'"'
+      uv run --no-project --with "a2a-sdk==0.3.16" --with httpx python - "$AGENT_URL" "$MESSAGE" <<'"'"'SCRIPT'"'"'
 import asyncio
 import sys
 from uuid import uuid4
 import httpx
-from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import Message, MessageSendParams, Part, Role, SendStreamingMessageRequest, SendStreamingMessageSuccessResponse, TaskStatusUpdateEvent, TextPart
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.types import Message, Part, Role, TextPart
 
 async def send_message(agent_url: str, msg: str):
-    async with httpx.AsyncClient(timeout=300) as client:
-        resolver = A2ACardResolver(httpx_client=client, base_url=agent_url)
-        card = await resolver.get_agent_card()
-        a2a = A2AClient(client, agent_card=card)
-        message = Message(kind="message", role=Role.user, parts=[Part(TextPart(kind="text", text=msg))], message_id=uuid4().hex)
-        req = SendStreamingMessageRequest(id=uuid4().hex, params=MessageSendParams(message=message))
-        async for chunk in a2a.send_message_streaming(req):
-            if isinstance(chunk.root, SendStreamingMessageSuccessResponse) and isinstance(chunk.root.result, TaskStatusUpdateEvent):
-                if chunk.root.result.status.message:
-                    print(chunk.root.result.status.message.parts[0].root.text, end="", flush=True)
+    async with httpx.AsyncClient(timeout=300) as httpx_client:
+        resolver = A2ACardResolver(httpx_client=httpx_client, base_url=agent_url)
+        agent_card = await resolver.get_agent_card()
+        config = ClientConfig(httpx_client=httpx_client,streaming=True)
+        factory = ClientFactory(config)
+        client = factory.create(agent_card)
+        msg = Message(kind="message", role=Role.user, parts=[Part(TextPart(kind="text", text=msg))], message_id=uuid4().hex)
+        async for event in client.send_message(msg):
+            if isinstance(event, tuple) and len(event) == 2:
+                task, update_event = event
+                if task.artifacts and task.artifacts[0].name == "agent_response" and task.artifacts[0].parts:
+                    print(task.artifacts[0].parts[0].root.text, end="", flush=True)
         print()
 
 asyncio.run(send_message(sys.argv[1], sys.argv[2]))
@@ -117,25 +122,27 @@ a2a_client_local() {
     return 1
   fi
 
-  uv run --no-project --with "a2a-sdk>=0.3.8" --with httpx python - "$AGENT_URL" "$MESSAGE" <<'SCRIPT'
+  uv run --no-project --with "a2a-sdk==0.3.16" --with httpx python - "$AGENT_URL" "$MESSAGE" <<'SCRIPT'
 import asyncio
 import sys
 from uuid import uuid4
 import httpx
-from a2a.client import A2ACardResolver, A2AClient
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
 from a2a.types import Message, MessageSendParams, Part, Role, SendStreamingMessageRequest, SendStreamingMessageSuccessResponse, TaskStatusUpdateEvent, TextPart
 
 async def send_message(agent_url: str, msg: str):
-    async with httpx.AsyncClient(timeout=300) as client:
-        resolver = A2ACardResolver(httpx_client=client, base_url=agent_url)
-        card = await resolver.get_agent_card()
-        a2a = A2AClient(client, agent_card=card)
-        message = Message(kind="message", role=Role.user, parts=[Part(TextPart(kind="text", text=msg))], message_id=uuid4().hex)
-        req = SendStreamingMessageRequest(id=uuid4().hex, params=MessageSendParams(message=message))
-        async for chunk in a2a.send_message_streaming(req):
-            if isinstance(chunk.root, SendStreamingMessageSuccessResponse) and isinstance(chunk.root.result, TaskStatusUpdateEvent):
-                if chunk.root.result.status.message:
-                    print(chunk.root.result.status.message.parts[0].root.text, end="", flush=True)
+    async with httpx.AsyncClient(timeout=300) as httpx_client:
+        resolver = A2ACardResolver(httpx_client=httpx_client, base_url=agent_url)
+        agent_card = await resolver.get_agent_card()
+        config = ClientConfig(httpx_client=httpx_client,streaming=True)
+        factory = ClientFactory(config)
+        client = factory.create(agent_card)
+        msg = Message(kind="message", role=Role.user, parts=[Part(TextPart(kind="text", text=msg))], message_id=uuid4().hex)
+        async for event in client.send_message(msg):
+            if isinstance(event, tuple) and len(event) == 2:
+                task, update_event = event
+                if task.artifacts and task.artifacts[0].name == "agent_response" and task.artifacts[0].parts:
+                    print(task.artifacts[0].parts[0].root.text, end="", flush=True)
         print()
 
 asyncio.run(send_message(sys.argv[1], sys.argv[2]))

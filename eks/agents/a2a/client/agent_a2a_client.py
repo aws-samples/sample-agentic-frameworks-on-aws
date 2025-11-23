@@ -2,7 +2,7 @@
 #
 # /// script
 # requires-python = ">=3.13"
-# dependencies = ["a2a-sdk>=0.3.10"]
+# dependencies = ["a2a-sdk==0.3.16"]
 # ///
 """Simple CLI to send messages to an A2A agent server."""
 
@@ -11,67 +11,29 @@ import asyncio
 import sys
 from uuid import uuid4
 import httpx
-from a2a.client import A2ACardResolver, A2AClient, ClientConfig, ClientFactory
-from a2a.types import (
-    Message,
-    MessageSendParams,
-    Part,
-    Role,
-    SendStreamingMessageRequest,
-    SendStreamingMessageSuccessResponse,
-    TaskStatusUpdateEvent,
-    TextPart,
-)
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.types import Message, Part, Role, TextPart, Task
 
-async def send_message_to_an_agent(agent_base_url: str, message_text: str) -> str:
-    """Send a message to a specific agent and yield the streaming response.
-
-    Args:
-        agent_base_url (str): The agent base_url like http://locahost:9000
-        message_text (str): The message to send.
-
-    Yields:
-        str: The streaming response from the agent.
-    """
+async def send_message(base_url: str, message: str):
     async with httpx.AsyncClient(timeout=300) as httpx_client:
-        # Get agent card and create client
-        resolver = A2ACardResolver(httpx_client=httpx_client, base_url=agent_base_url)
+        resolver = A2ACardResolver(httpx_client=httpx_client, base_url=base_url)
         agent_card = await resolver.get_agent_card()
-
-        client = A2AClient(httpx_client, agent_card=agent_card)
-        # TODO: A2AClient is deprecated need to change to use ClientFactory
-        # config = ClientConfig(httpx_client=httpx_client)
-        # factory = ClientFactory(config)
-        # client = factory.create(agent_card)
-        message = Message(
-            kind="message",
-            role=Role.user,
-            parts=[Part(TextPart(kind="text", text=message_text))],
-            message_id=uuid4().hex,
-        )
-
-        streaming_request = SendStreamingMessageRequest(
-            id=str(uuid4().hex), params=MessageSendParams(message=message)
-        )
-        async for chunk in client.send_message_streaming(streaming_request):
-            if isinstance(
-                chunk.root, SendStreamingMessageSuccessResponse
-            ) and isinstance(chunk.root.result, TaskStatusUpdateEvent):
-                message = chunk.root.result.status.message
-                if message:
-                    yield message.parts[0].root.text
-
-
-
-async def run_streaming_message(agent_url: str, message_text: str) -> str:
-    """Wrapper to consume the async generator and return collected response."""
-    response_parts = []
-    async for text_chunk in send_message_to_an_agent(agent_url, message_text):
-        response_parts.append(text_chunk)
-        print(text_chunk, end='', flush=True)  # Print streaming chunks as they arrive
-    print()  # New line after streaming completes
-    return ''.join(response_parts)
-
+        config = ClientConfig(httpx_client=httpx_client,streaming=True)
+        factory = ClientFactory(config)
+        client = factory.create(agent_card)
+        msg = Message(kind="message", role=Role.user, parts=[Part(TextPart(kind="text", text=message))], message_id=uuid4().hex)
+        last_artifact_id = None
+        async for event in client.send_message(msg):
+            if isinstance(event, tuple) and len(event) == 2:
+                tast: Task
+                task, update_event = event
+                if task.artifacts and task.artifacts[0].name == "agent_response" and task.artifacts[0].parts:
+                    #print(f"Task: {task.model_dump_json(exclude_none=True, indent=2)}")
+                    # only print if the artifact has changed
+                    if last_artifact_id != task.artifacts[0].artifact_id:
+                        print(task.artifacts[0].parts[0].root.text, end="", flush=True)
+                    last_artifact_id = task.artifacts[0].artifact_id
+        print()
 
 def main():
     """CLI entry point."""
@@ -82,11 +44,9 @@ def main():
     )
     parser.add_argument("agent_url", help="URL of the A2A agent server")
     parser.add_argument("message", help="Message to send to the agent")
-
     args = parser.parse_args()
-
     try:
-        response = asyncio.run(run_streaming_message(args.agent_url, args.message))
+        asyncio.run(send_message(base_url=args.agent_url, message=args.message))
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
