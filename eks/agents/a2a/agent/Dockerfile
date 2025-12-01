@@ -1,5 +1,14 @@
-ARG RUNTAG=latest
-FROM cgr.dev/chainguard/python:latest-dev AS uv
+FROM python:3.13-slim AS uv
+
+# Install system dependencies for building Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Install the project into `/app`
 WORKDIR /app
@@ -9,9 +18,6 @@ ENV UV_COMPILE_BYTECODE=1
 
 # Copy from the cache instead of linking since it's a mounted volume
 ENV UV_LINK_MODE=copy
-
-# Prefer the system python
-ENV UV_PYTHON_PREFERENCE=only-system
 
 # Run without updating the uv.lock file like running with `--frozen`
 ENV UV_FROZEN=true
@@ -29,7 +35,8 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --no-dev --no-editable
 
-FROM cgr.dev/chainguard/python:${RUNTAG}
+# Runtime stage - use slim image without build tools
+FROM python:3.13-slim
 
 # Project got copied to here
 WORKDIR /app
@@ -37,5 +44,5 @@ WORKDIR /app
 # Place executables in the environment at the front of the path and include other binaries
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Get the project from the uv layer
+# Get the project from the builder layer
 COPY --from=uv  /app/.venv .venv
