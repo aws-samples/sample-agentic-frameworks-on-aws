@@ -182,7 +182,7 @@ LangSmith is integrated into this project and allows you to view the execution p
 To view traces, set the LangSmith environment variables in your .env file:
     - LANGSMITH_API_KEY=""
     - LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
-    - LANGSMITH_TRACING="false"
+    - LANGSMITH_TRACING="true"
     - LANGSMITH_PROJECT="aws-shopping-agent"
 
 You can then log into [LangSmith](https://smith.langchain.com) and view the traces in the "aws-shopping-agent" project.
