@@ -1,0 +1,19 @@
+[project]
+name = "agentcore-deploy-demo"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "llama-index-workflows>=0.1.0",
+    "llama-agents-agentcore==0.8.16",
+    "llama-agents-server>=0.4.4",
+    "python-dotenv>=1.0.0",
+    "llama-cloud>=2.1",
+    "pydantic>=2.0",
+]
+
+[tool.llamaagents]
+name = "agentcore-deploy-demo"
+env_files = [".env"]
+
+[tool.llamaagents.workflows]
+kyc = "workflow:workflow"

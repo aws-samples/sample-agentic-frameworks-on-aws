@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  IAM roles required for deploying LlamaIndex Workflows to AWS Bedrock AgentCore.
+  Creates two roles:
+    1. DeployRole - used by the deployer and CodeBuild to build/push images and manage runtimes
+    2. ExecutionRole - used by the AgentCore Runtime at runtime
+
+Resources:
+
+  # =========================================================================
+  # Deployment Role — used by CodeBuild and the deployer to build/push
+  # container images and manage AgentCore runtimes
+  # =========================================================================
+  AgentCoreDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AgentCoreDeployRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          # Allow CodeBuild to assume this role
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+
+          # Allow the current account to assume this role
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+
+      Policies:
+        - PolicyName: AgentCoreDeployPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # AgentCore: Create/update/delete runtimes
+              - Sid: BedrockAgentCore
+                Effect: Allow
+                Action: bedrock-agentcore:*
+                Resource: "*"
+
+              # ECR: Create repos, push/pull images
+              - Sid: ECRAccess
+                Effect: Allow
+                Action:
+                  - ecr:CreateRepository
+                  - ecr:DeleteRepository
+                  - ecr:DescribeRepositories
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource: "*"
+
+              # CodeBuild: Create/run/delete build projects
+              - Sid: CodeBuildAccess
+                Effect: Allow
+                Action:
+                  - codebuild:CreateProject
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codebuild:DeleteProject
+                Resource: "*"
+
+              # S3: Upload/delete build artifacts (scoped to deployer buckets)
+              - Sid: S3Access
+                Effect: Allow
+                Action:
+                  - s3:CreateBucket
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - arn:aws:s3:::llamactl-agentcore-*
+                  - arn:aws:s3:::llamactl-agentcore-*/*
+
+              # IAM: Pass role to CodeBuild and AgentCore
+              - Sid: IAMPassRole
+                Effect: Allow
+                Action: iam:PassRole
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    iam:PassedToService:
+                      - codebuild.amazonaws.com
+                      - bedrock-agentcore.amazonaws.com
+
+              # CloudWatch Logs: Read/write build logs
+              - Sid: CloudWatchLogs
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:GetLogEvents
+                Resource: arn:aws:logs:*:*:log-group:/aws/codebuild/*
+
+  # =========================================================================
+  # Execution Role — used by the AgentCore Runtime at runtime
+  # =========================================================================
+  AgentCoreExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AgentCoreExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock-agentcore.amazonaws.com
+            Action: sts:AssumeRole
+
+      Policies:
+        - PolicyName: AgentCoreExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Bedrock: Invoke foundation models and inference profiles
+              - Sid: BedrockModelAccess
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                  - bedrock:GetFoundationModel
+                  - bedrock:GetInferenceProfile
+                Resource:
+                  - arn:aws:bedrock:*::foundation-model/*
+                  - arn:aws:bedrock:*:*:inference-profile/*
+                  - arn:aws:bedrock:*:*:application-inference-profile/*
+
+              # ECR: Pull container images
+              - Sid: ECRPullAccess
+                Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchCheckLayerAvailability
+                Resource: "*"
+
+              # CloudWatch: Describe log groups (broad)
+              - Sid: CloudWatchLogGroups
+                Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                Resource: arn:aws:logs:*:*:log-group:*
+
+              # CloudWatch: Create log groups and describe streams for AgentCore runtimes
+              - Sid: CloudWatchLogGroupManage
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:DescribeLogStreams
+                Resource: arn:aws:logs:*:*:log-group:/aws/bedrock-agentcore/runtimes/*
+
+              # CloudWatch: Write runtime log streams
+              - Sid: CloudWatchLogStreams
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - arn:aws:logs:*:*:log-group:/aws/bedrock-agentcore/*:log-stream:*
+                  - arn:aws:logs:*:*:log-group:otel-rt-logs*:log-stream:*
+
+              # X-Ray: Trace export (required for ADOT observability)
+              - Sid: XRayTelemetry
+                Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                Resource: "*"
+
+              # CloudWatch: Publish runtime metrics
+              - Sid: CloudWatchMetrics
+                Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: bedrock-agentcore
+
+              # S3: Log delivery
+              - Sid: S3LogDelivery
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetBucketLocation
+                Resource:
+                  - arn:aws:s3:::llamactl-agentcore-*
+                  - arn:aws:s3:::llamactl-agentcore-*/*
+
+Outputs:
+  DeployRoleArn:
+    Description: ARN of the deployment role (use with --deployment-role)
+    Value: !GetAtt AgentCoreDeployRole.Arn
+
+  ExecutionRoleArn:
+    Description: ARN of the execution role (use with --execution-role)
+    Value: !GetAtt AgentCoreExecutionRole.Arn
