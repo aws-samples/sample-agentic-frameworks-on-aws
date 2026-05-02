@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
-    "gradio>=5.38.2,<6.0.0",
+    "gradio>=5.38.2,<7.0.0",
     "boto3>=1.39.14,<2.0.0",
     "fastapi>=0.116.1,<1.0.0",
     "itsdangerous>=2.2.0,<3.0.0",
