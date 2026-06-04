@@ -16,7 +16,7 @@ dependencies = [
     "uvicorn>=0.24.0",
     "aiohttp>=3.8.0",
     "requests>=2.31.0",
-    "pyjwt==2.10.1",
+    "pyjwt==2.12.0",
     "cryptography==45.0.4",
     "python-dotenv==1.0.1"
 ]
